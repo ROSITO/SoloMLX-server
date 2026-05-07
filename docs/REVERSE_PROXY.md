@@ -1,5 +1,7 @@
 # REVERSE PROXY — MLXServe
 
+Référence complète du serveur : [`README.md`](../README.md). Index des guides : [`docs/README.md`](README.md).
+
 ## Caddy (LAN / HTTPS local)
 
 Exemple `Caddyfile`:

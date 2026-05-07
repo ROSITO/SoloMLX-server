@@ -45,13 +45,14 @@ class InferenceEngine:
     async def generate_text(
         self,
         model: str,
-        prompt: str,
+        messages: list[dict[str, str]],
         max_tokens: int = 256,
         temperature: float = 0.2,
         top_p: float = 0.95,
     ) -> str:
         await self.ensure_model(model)
         self.last_used_ts = time.time()
+        prompt = await self.backend.build_chat_prompt(messages)
         return await self.backend.generate(
             prompt=prompt,
             max_tokens=max_tokens,
@@ -62,13 +63,14 @@ class InferenceEngine:
     async def stream_text(
         self,
         model: str,
-        prompt: str,
+        messages: list[dict[str, str]],
         max_tokens: int = 256,
         temperature: float = 0.2,
         top_p: float = 0.95,
     ):
         await self.ensure_model(model)
         self.last_used_ts = time.time()
+        prompt = await self.backend.build_chat_prompt(messages)
         async for token in self.backend.stream(
             prompt=prompt,
             max_tokens=max_tokens,

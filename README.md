@@ -1,222 +1,315 @@
-# SoloMLX-server
+# MLXServe
 
-Serveur local MLX pour Apple Silicon avec une API simple et compatible OpenAI.
+Serveur d’inférence **[MLX](https://github.com/ml-explore/mlx)** local pour **Apple Silicon**, avec une API **compatible OpenAI** (`/v1/chat/completions`, `/v1/models`, streaming SSE). Pensé pour la stabilité, la mémoire unifiée et des performances correctes sans stack « cloud ».
 
-## Objectifs
+**Dépôt :** [github.com/ROSITO/SoloMLX-server](https://github.com/ROSITO/SoloMLX-server)
 
-- Stabilite
-- Gestion memoire prudente
-- Performance inference sur Apple Silicon
-- Simplicite d'utilisation locale
+---
 
-## Statut
+## Sommaire
 
-MVP backend en place et valide en tests.
+- [Aperçu visuel](#aperçu-visuel)
+- [Fonctionnalités](#fonctionnalités)
+- [Installation](#installation)
+- [Lancer le serveur](#lancer-le-serveur)
+- [Interface web](#interface-web)
+- [Variables d’environnement](#variables-denvironnement)
+- [API : exemples](#api--exemples)
+- [CLI](#cli)
+- [Performances et autotune](#performances-et-autotune)
+- [Modèles (inventory HF)](#modèles-inventory-hf)
+- [Sécurité et observabilité](#sécurité-et-observabilité)
+- [Documentation](#documentation)
+- [Tests](#tests)
+- [Comportement chat / sorties « transcript »](#comportement-chat--sorties-transcript)
 
-## Etat actuel (MVP implemente)
+---
 
-- API FastAPI operationnelle
-- Endpoints exposes:
-  - `GET /health`
-  - `GET /metrics`
-  - `GET /v1/models`
-  - `GET /v1/models/local`
-  - `GET /v1/models/recommended`
-  - `POST /v1/models/pull`
-  - `DELETE /v1/models/{model_alias}`
-  - `POST /v1/chat/completions` (stream SSE et non-stream)
-- Validation des requetes via Pydantic
-- API key supportee en mode Bearer (configurable)
-- Memory guardian actif (zones green/yellow/red)
-- Politique d'unload idle modele
-- Security middleware:
-  - rate limiting
-  - headers securite
-  - CORS configurable
-- CLI:
-  - `mlxserve` / `mlxserve serve`
-  - `mlxserve autotune`
-  - `mlxserve models-list`
-  - `mlxserve models-pull --model ...`
-  - `mlxserve models-rm --model ...`
+## Aperçu visuel
+
+### Zone de conversation (modèle affiché lisiblement)
+
+![Interface chat MLXServe — compositeur et pilule modèle](docs/screenshots/ui-desktop.png)
+
+### Réglages, catalogue recommandé et modèles locaux
+
+![Panneau réglages — URL, défaut /v1/models, listes recommandées](docs/screenshots/ui-settings-catalog.png)
+
+---
+
+## Fonctionnalités
+
+| Domaine | Détail |
+|--------|--------|
+| **Inférence** | Backend `mlx-lm` (sélection auto ou `stub` pour les tests) |
+| **Chat** | `apply_chat_template` + `add_generation_prompt` quand le tokenizer le permet |
+| **Streaming** | SSE token par token, paramètres `temperature` / `top_p` |
+| **Mémoire** | `MemoryGuardian` (zones green / yellow / red), swap et pression pris en compte |
+| **Modèles** | `GET /v1/models`, `recommended`, `local`, `pull`, `delete` |
+| **Sécurité** | Clé API optionnelle, rate limit, en-têtes HTTP, CORS configurable |
+| **Observabilité** | `GET /metrics` (style Prometheus) |
+| **UI** | Page `/` : chat enrichi (blocs code, copie, markdown léger), catalogues API |
+
+---
 
 ## Installation
 
-### 1) Setup environnement
+### Environnement Python
 
 ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -e ".[dev]"
 ```
 
-### 2) Installer MLX runtime
+### Runtime MLX (Apple Silicon)
 
 ```bash
 .venv/bin/python -m pip install -e ".[mlx]"
 ```
 
-## Lancement serveur
+---
+
+## Lancer le serveur
 
 ```bash
 .venv/bin/mlxserve serve
-# ou
+```
+
+Ou :
+
+```bash
 ./scripts/start_server.sh
 ```
 
-Variables utiles:
+Par défaut le serveur écoute sur `127.0.0.1:8080` (voir variables ci‑dessous).
 
-- `MLXSERVE_HOST` (defaut `127.0.0.1`)
-- `MLXSERVE_PORT` (defaut `8080`)
-- `MLXSERVE_API_KEY`
-- `MLXSERVE_RUNTIME_BACKEND` (`auto`, `mlx`, `stub`)
-- `MLXSERVE_DEFAULT_MODEL`
-- `MLXSERVE_CORS_ALLOW_ORIGINS` (comma-separated, ex: `http://localhost:3000,http://127.0.0.1:3000`)
-- `MLXSERVE_RATE_LIMIT_PER_MINUTE`
-- `MLXSERVE_PREFILL_STEP_SIZE`
-- `MLXSERVE_KV_BITS`
-- `MLXSERVE_KV_GROUP_SIZE`
-- `MLXSERVE_QUANTIZED_KV_START`
+---
 
-## Optimisations runtime (token/s)
+## Interface web
 
-Optimisations implementees:
+Ouvrir dans le navigateur :
 
-- streaming natif temps reel (plus de buffer complet avant emission)
-- parametres generation propages (`temperature`, `top_p`)
-- support tuning MLX:
-  - `MLXSERVE_PREFILL_STEP_SIZE`
-  - `MLXSERVE_KV_BITS`
-  - `MLXSERVE_KV_GROUP_SIZE`
-  - `MLXSERVE_QUANTIZED_KV_START`
-
-Valeurs actuelles par defaut:
-
-- `MLXSERVE_PREFILL_STEP_SIZE=2048`
-- `MLXSERVE_KV_BITS=4`
-- `MLXSERVE_KV_GROUP_SIZE=64`
-- `MLXSERVE_QUANTIZED_KV_START=32`
-
-## Autotune performance
-
-Commande:
-
-```bash
-.venv/bin/mlxserve autotune --model "mlx-community/Mistral-7B-Instruct-v0.3-4bit" --max-tokens 96
+```text
+http://127.0.0.1:8080/
 ```
 
-Ce que fait l'autotune:
+*(Remplacez le port si vous avez défini `MLXSERVE_PORT`.)*
 
-- charge le modele
-- teste plusieurs combinaisons (`prefill_step_size`, `kv_bits`, `kv_group_size`, `quantized_kv_start`)
-- classe les runs par `generation_tps` puis `ttft`
-- retourne un JSON avec:
-  - meilleur profil
-  - tous les runs
-  - variables d'environnement recommandees
+L’UI appelle `POST /v1/chat/completions` en streaming, affiche le **nom de modèle** (y compris depuis un chemin de cache Hugging Face), propose les listes **recommandées** et **locales** via l’API, et rend les blocs de code façon « assistant » moderne.
 
-## Model Manager (local inventory)
+---
 
-Gestion locale des modeles dans `~/.mlxserve/models/registry.json`.
+## Variables d’environnement
 
-Commandes:
+Préfixe commun : **`MLXSERVE_`**.
 
-```bash
-# lister modeles locaux suivis par MLXServe
-.venv/bin/mlxserve models-list
+| Variable | Rôle | Défaut |
+|----------|------|--------|
+| `MLXSERVE_HOST` | Adresse d’écoute | `127.0.0.1` |
+| `MLXSERVE_PORT` | Port | `8080` |
+| `MLXSERVE_API_KEY` | Si non vide, exige `Authorization: Bearer …` | *(vide)* |
+| `MLXSERVE_DEFAULT_MODEL` | Modèle Hugging Face / chemin MLX par défaut | `mlx-community/Qwen2.5-0.5B-Instruct-4bit` |
+| `MLXSERVE_RUNTIME_BACKEND` | `auto`, `mlx` ou `stub` | `auto` |
+| `MLXSERVE_MAX_MEMORY_GB` | Limite « soft » mémoire (Go) | `14.0` |
+| `MLXSERVE_HARD_MEMORY_GB` | Limite « hard » (Go) | `15.0` |
+| `MLXSERVE_IDLE_UNLOAD_MINUTES` | Décharge du modèle après inactivité | `15` |
+| `MLXSERVE_CORS_ALLOW_ORIGINS` | Origines CORS, séparées par des virgules | `*` |
+| `MLXSERVE_RATE_LIMIT_PER_MINUTE` | Plafond de requêtes / fenêtre | `120` |
+| `MLXSERVE_PREFILL_STEP_SIZE` | Tuning préfill MLX | `1024` |
+| `MLXSERVE_KV_BITS` | Quantification KV | `4` |
+| `MLXSERVE_KV_GROUP_SIZE` | Taille de groupe KV | `64` |
+| `MLXSERVE_QUANTIZED_KV_START` | Début quantification KV | `32` |
 
-# pull un modele HF (telechargement + enregistrement inventory)
-.venv/bin/mlxserve models-pull --model "mlx-community/Mistral-7B-Instruct-v0.3-4bit"
-
-# supprimer de l'inventory + tentative de cleanup cache HF
-.venv/bin/mlxserve models-rm --model "mistral-7b-instruct-v0.3-4bit"
-```
-
-API:
-
-- `GET /v1/models/local`
-- `POST /v1/models/pull` avec `{"model":"<hf_repo>"}`
-- `DELETE /v1/models/{model_alias}`
-
-## Security et observabilite
-
-Security active:
-
-- rate limiting par client (fenetre 60s)
-- headers: `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cache-Control`
-- CORS configurable
-
-Observabilite:
-
-- endpoint `GET /metrics` (format texte Prometheus)
-- compteurs:
-  - requests total
-  - chat requests total
-  - errors total
-  - rate-limited total
-  - generated tokens total (estime)
-  - latency moyenne
-  - latency p95 recente
-  - memory used/swap used
-  - memory zone
-  - generation tps observe
-
-## Commandes utiles
+Exemple pour forcer le backend MLX :
 
 ```bash
-# lancer le serveur (backend auto)
-.venv/bin/mlxserve
-
-# forcer backend MLX
 MLXSERVE_RUNTIME_BACKEND=mlx .venv/bin/mlxserve serve
+```
 
-# tests
-.venv/bin/python -m pytest -q
+---
 
-# benchmark rapide natif mlx-lm (exemple)
+## API : exemples
+
+### Santé
+
+```bash
+curl -s http://127.0.0.1:8080/health
+```
+
+### Modèles exposés (OpenAI-compatible)
+
+```bash
+curl -s http://127.0.0.1:8080/v1/models
+```
+
+Réponse typique :
+
+```json
+{
+  "object": "list",
+  "data": [
+    {
+      "id": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+      "object": "model",
+      "owned_by": "mlxserve"
+    }
+  ]
+}
+```
+
+### Chat (non stream)
+
+```bash
+curl -s http://127.0.0.1:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+    "messages": [{"role": "user", "content": "Bonjour"}],
+    "max_tokens": 128,
+    "temperature": 0.2
+  }'
+```
+
+### Chat (stream SSE)
+
+Ajoutez `"stream": true` au JSON ; la réponse est un flux d’événements `data: { ... }` terminé par `data: [DONE]`.
+
+Avec clé API configurée :
+
+```bash
+curl -s http://127.0.0.1:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer VOTRE_CLE" \
+  -d '{"messages":[{"role":"user","content":"hi"}],"stream":true,"max_tokens":64}'
+```
+
+### Métriques Prometheus
+
+```bash
+curl -s http://127.0.0.1:8080/metrics
+```
+
+---
+
+## CLI
+
+| Commande | Description |
+|----------|-------------|
+| `mlxserve` ou `mlxserve serve` | Démarre Uvicorn / FastAPI |
+| `mlxserve autotune --model "…" [--max-tokens N]` | Cherche un profil `prefill` / KV plus rapide |
+| `mlxserve models-list` | Liste l’inventory locale |
+| `mlxserve models-pull --model "org/repo"` | Télécharge et enregistre un modèle |
+| `mlxserve models-rm --model "alias"` | Retire de l’inventory + nettoyage cache |
+
+Exemple autotune :
+
+```bash
+.venv/bin/mlxserve autotune \
+  --model "mlx-community/Mistral-7B-Instruct-v0.3-4bit" \
+  --max-tokens 96
+```
+
+---
+
+## Performances et autotune
+
+- Streaming réel (pas d’attente de la réponse complète avant envoi).
+- Paramètres MLX exposés via l’environnement (`PREFILL_STEP_SIZE`, `KV_*`, etc.).
+- Valeurs par défaut actuelles alignées sur un profil raisonnable après autotune (voir `config.py`).
+
+Benchmark rapide « brut » avec `mlx-lm` :
+
+```bash
 .venv/bin/python - <<'PY'
 from mlx_lm import load, stream_generate
 from mlx_lm.sample_utils import make_sampler
 import time
-m,t = load("mlx-community/Mistral-7B-Instruct-v0.3-4bit")
+
+model_id = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+m, t = load(model_id)
 sampler = make_sampler(temp=0.2, top_p=0.95)
-s=time.time(); last=None
-for r in stream_generate(m,t,prompt="bench",max_tokens=96,sampler=sampler,prefill_step_size=2048,kv_bits=4,kv_group_size=64,quantized_kv_start=32):
-    last=r
-print("generation_tps:", round(last.generation_tps,2), "elapsed:", round(time.time()-s,3))
+t0 = time.time()
+last = None
+for r in stream_generate(
+    m, t,
+    prompt="bench",
+    max_tokens=96,
+    sampler=sampler,
+    prefill_step_size=1024,
+    kv_bits=4,
+    kv_group_size=64,
+    quantized_kv_start=32,
+):
+    last = r
+print("generation_tps:", round(last.generation_tps, 2), "elapsed:", round(time.time() - t0, 3))
 PY
 ```
 
-## Progression roadmap (etat actuel)
+---
 
-- Phase 0 Foundation: **done**
-- Phase 1 MVP API/Inference: **done**
-- Phase 2 Memory Guardian: **done (RAM/swap/pressure + hysteresis + anti-swap guardrails)**
-- Phase 3 Model Manager: **done (inventory pull/list/rm + metadata size/quantization)**
-- Phase 4 Security baseline: **done (rate limit + headers + CORS)**
-- Phase 5 Observability: **done (metrics endpoint + p95 + memory + ops docs + startup script)**
+## Modèles (inventory HF)
 
-## Runbook / Ops docs
+Fichier de registre : `~/.mlxserve/models/registry.json`.
 
-- `docs/OPERATIONS.md`
-- `docs/REVERSE_PROXY.md`
+| Endpoint | Méthode | Rôle |
+|----------|---------|------|
+| `/v1/models/local` | `GET` | Modèles suivis + métadonnées |
+| `/v1/models/recommended` | `GET` | Suggestions selon la RAM machine |
+| `/v1/models/pull` | `POST` | Corps `{"model":"hf/repo"}` |
+| `/v1/models/{model_alias}` | `DELETE` | Retrait + tentative de nettoyage cache |
+
+---
+
+## Sécurité et observabilité
+
+- **Rate limiting** par client (fenêtre glissante).
+- **En-têtes** : `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Cache-Control`.
+- **CORS** : `MLXSERVE_CORS_ALLOW_ORIGINS`.
+- **`/metrics`** : requêtes, erreurs, tokens, latences, zone mémoire, TPS de génération, etc.
+
+---
+
+## Documentation
+
+| Fichier | Contenu |
+|---------|---------|
+| [docs/README.md](docs/README.md) | Index de la documentation |
+| [docs/OPERATIONS.md](docs/OPERATIONS.md) | Démarrage, health, curl, dépannage |
+| [docs/REVERSE_PROXY.md](docs/REVERSE_PROXY.md) | Caddy, Cloudflare, Tailscale |
+| [docs/CHAT_TRANSCRIPT_OUTPUT.md](docs/CHAT_TRANSCRIPT_OUTPUT.md) | Format chat, anti « roleplay », blocs code |
+| [docs/screenshots/](docs/screenshots/) | Captures d’écran de l’UI |
+| [AGENTS.md](AGENTS.md) | Architecture « agents » du dépôt |
+| [MEMORY.md](MEMORY.md) | Notes mémoire / produit (état, limites) |
+
+---
 
 ## Tests
 
-- Suite `pytest` locale
-- Couverture MVP:
-  - health
-  - models
-  - chat non-stream
-  - chat stream
-  - securite API key
-  - logique memory guardian
-  - parsing CLI
+```bash
+.venv/bin/python -m pytest -q
+```
 
-## Notes
+Couverture typique : health, modèles, chat stream / non-stream, sécurité, guardian mémoire, CLI, métriques, UI servie à `/`, sanitisation des sorties.
 
-Le runtime supporte maintenant un backend selectionnable:
-- `MLXSERVE_RUNTIME_BACKEND=auto` (defaut, `mlx-lm` si dispo sinon fallback stub)
-- `MLXSERVE_RUNTIME_BACKEND=mlx` (force `mlx-lm`)
-- `MLXSERVE_RUNTIME_BACKEND=stub` (mode simulation)
+---
 
-La liste `/v1/models/recommended` propose des modeles Hugging Face calibres en fonction de la RAM machine.
+## Comportement chat / sorties « transcript »
+
+Si le modèle renvoie des tours façon `assistant:` / `user:` ou des bribes type `Ass`, voir **[docs/CHAT_TRANSCRIPT_OUTPUT.md](docs/CHAT_TRANSCRIPT_OUTPUT.md)** : le serveur utilise le **chat template** du tokenizer ; l’UI et l’API gardent des garde-fous d’affichage.
+
+---
+
+## Feuille de route (état)
+
+- Phase 0 — Fondations : **fait**
+- Phase 1 — API / inférence : **fait**
+- Phase 2 — Memory Guardian : **fait**
+- Phase 3 — Model Manager : **fait**
+- Phase 4 — Sécurité de base : **fait**
+- Phase 5 — Observabilité + ops : **fait**
+
+---
+
+## Licence et avertissement
+
+Projet orienté **usage local** sur macOS / Apple Silicon. Les réponses des modèles peuvent être incorrectes : vérifiez les sorties critiques (l’UI l’indique également).

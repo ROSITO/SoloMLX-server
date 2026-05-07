@@ -8,6 +8,9 @@ class RuntimeBackend:
     async def load(self, model: str) -> None:
         raise NotImplementedError
 
+    async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
+        raise NotImplementedError
+
     async def generate(self, prompt: str, max_tokens: int, temperature: float = 0.2, top_p: float = 0.95) -> str:
         raise NotImplementedError
 
@@ -24,6 +27,9 @@ class StubBackend(RuntimeBackend):
 
     async def load(self, model: str) -> None:
         self.model = model
+
+    async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
+        return "\n".join(f"{m['role']}: {m['content']}" for m in messages)
 
     async def generate(self, prompt: str, max_tokens: int, temperature: float = 0.2, top_p: float = 0.95) -> str:
         clipped_prompt = prompt.strip().replace("\n", " ")
@@ -54,6 +60,21 @@ class MLXLMBackend(RuntimeBackend):
         self.kv_bits = kv_bits
         self.kv_group_size = kv_group_size
         self.quantized_kv_start = quantized_kv_start
+
+    async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
+        if self.tokenizer is None:
+            raise RuntimeError("Model is not loaded")
+
+        def _from_template() -> str:
+            return self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+
+        if getattr(self.tokenizer, "has_chat_template", False):
+            return await asyncio.to_thread(_from_template)
+        return "\n".join(f"{m['role']}: {m['content']}" for m in messages)
 
     async def load(self, model: str) -> None:
         if self.model_name == model and self.model is not None and self.tokenizer is not None:
