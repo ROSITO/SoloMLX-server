@@ -19,6 +19,7 @@ MVP backend en place et valide en tests.
 - Endpoints exposes:
   - `GET /health`
   - `GET /v1/models`
+  - `GET /v1/models/recommended`
   - `POST /v1/chat/completions` (stream SSE et non-stream)
 - Validation des requetes via Pydantic
 - API key supportee en mode Bearer (configurable)
@@ -47,4 +48,9 @@ python3 -m venv .venv
 
 ## Notes
 
-Le moteur d'inference actuel est un backend MVP (stub) pour stabiliser le contrat API et l'observabilite de base. La prochaine etape est l'integration complete `mlx-lm` avec selection de modeles calibres machine.
+Le runtime supporte maintenant un backend selectionnable:
+- `MLXSERVE_RUNTIME_BACKEND=auto` (defaut, `mlx-lm` si dispo sinon fallback stub)
+- `MLXSERVE_RUNTIME_BACKEND=mlx` (force `mlx-lm`)
+- `MLXSERVE_RUNTIME_BACKEND=stub` (mode simulation)
+
+La liste `/v1/models/recommended` propose des modeles Hugging Face calibres en fonction de la RAM machine.

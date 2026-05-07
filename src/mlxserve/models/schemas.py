@@ -19,6 +19,20 @@ class ModelsResponse(BaseModel):
     data: list[ModelItem]
 
 
+class RecommendedModelItem(BaseModel):
+    id: str
+    label: str
+    ram_min_gb: float
+    ram_max_gb: float
+    context: str
+    notes: str
+
+
+class RecommendedModelsResponse(BaseModel):
+    machine_ram_gb: float
+    data: list[RecommendedModelItem]
+
+
 class ChatMessage(BaseModel):
     role: Literal["system", "user", "assistant"]
     content: str = Field(min_length=1)

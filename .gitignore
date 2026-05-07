@@ -4,3 +4,8 @@ MEMORY.md
 PRD_MLXServe.md
 ROADMAP.md
 PLAN_ACTION.md
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/

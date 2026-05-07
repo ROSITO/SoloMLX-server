@@ -6,7 +6,7 @@ from mlxserve.config import settings
 from mlxserve.memory.guardian import MemoryGuardian
 from mlxserve.runtime.engine import InferenceEngine
 
-engine = InferenceEngine()
+engine = InferenceEngine(backend_mode=settings.runtime_backend)
 guardian = MemoryGuardian(
     soft_limit_gb=settings.max_memory_gb,
     hard_limit_gb=settings.hard_memory_gb,

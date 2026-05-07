@@ -20,6 +20,9 @@ dev = [
   "pytest>=8.4.0",
   "httpx>=0.28.0",
 ]
+mlx = [
+  "mlx-lm>=0.26.0",
+]
 
 [project.scripts]
 mlxserve = "mlxserve.cli:main"

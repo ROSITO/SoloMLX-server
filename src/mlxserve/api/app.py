@@ -15,8 +15,11 @@ from mlxserve.models.schemas import (
     HealthResponse,
     ModelItem,
     ModelsResponse,
+    RecommendedModelItem,
+    RecommendedModelsResponse,
     Usage,
 )
+from mlxserve.models.catalog import machine_ram_gb, recommended_for_machine
 
 app = FastAPI(title="MLXServe", version="0.1.0")
 
@@ -30,6 +33,23 @@ def health() -> HealthResponse:
 def list_models() -> ModelsResponse:
     model_id = engine.loaded_model or settings.default_model
     return ModelsResponse(data=[ModelItem(id=model_id)])
+
+
+@app.get("/v1/models/recommended", response_model=RecommendedModelsResponse, dependencies=[Depends(require_api_key)])
+def list_recommended_models() -> RecommendedModelsResponse:
+    ram_gb = machine_ram_gb()
+    data = [
+        RecommendedModelItem(
+            id=model.id,
+            label=model.label,
+            ram_min_gb=model.ram_min_gb,
+            ram_max_gb=model.ram_max_gb,
+            context=model.context,
+            notes=model.notes,
+        )
+        for model in recommended_for_machine(ram_gb)
+    ]
+    return RecommendedModelsResponse(machine_ram_gb=ram_gb, data=data)
 
 
 def _prompt_from_messages(req: ChatCompletionRequest) -> str:
