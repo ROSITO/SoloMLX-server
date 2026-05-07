@@ -33,6 +33,23 @@ class RecommendedModelsResponse(BaseModel):
     data: list[RecommendedModelItem]
 
 
+class LocalModelItem(BaseModel):
+    id: str
+    source: str
+    local_path: str
+    pulled_at: str
+    size_bytes: int
+    quantization: str
+
+
+class LocalModelsResponse(BaseModel):
+    data: list[LocalModelItem]
+
+
+class PullModelRequest(BaseModel):
+    model: str = Field(min_length=3)
+
+
 class ChatMessage(BaseModel):
     role: Literal["system", "user", "assistant"]
     content: str = Field(min_length=1)

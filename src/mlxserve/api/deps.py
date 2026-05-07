@@ -4,6 +4,8 @@ from fastapi import Header, HTTPException
 
 from mlxserve.config import settings
 from mlxserve.memory.guardian import MemoryGuardian
+from mlxserve.models.manager import ModelManager
+from mlxserve.observability import MetricsStore
 from mlxserve.runtime.engine import InferenceEngine
 
 engine = InferenceEngine(backend_mode=settings.runtime_backend)
@@ -12,6 +14,8 @@ guardian = MemoryGuardian(
     hard_limit_gb=settings.hard_memory_gb,
     idle_unload_minutes=settings.idle_unload_minutes,
 )
+model_manager = ModelManager()
+metrics = MetricsStore()
 
 
 def require_api_key(authorization: str | None = Header(default=None)) -> None:
