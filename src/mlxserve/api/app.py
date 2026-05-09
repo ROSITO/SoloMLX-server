@@ -232,7 +232,12 @@ async def security_and_metrics_middleware(request: Request, call_next):
 
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
-    return HealthResponse(memory_zone=guardian.classify())
+    mid = engine.loaded_model
+    return HealthResponse(
+        memory_zone=guardian.classify(),
+        model_loaded=mid is not None,
+        loaded_model_id=mid,
+    )
 
 
 @app.get("/", response_class=HTMLResponse)

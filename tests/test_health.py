@@ -10,3 +10,6 @@ def test_health_returns_ok():
     payload = response.json()
     assert payload["status"] == "ok"
     assert payload["memory_zone"] in {"green", "yellow", "red"}
+    assert "model_loaded" in payload
+    assert payload["model_loaded"] in (True, False)
+    assert "loaded_model_id" in payload

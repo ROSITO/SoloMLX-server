@@ -62,7 +62,7 @@ curl -s http://127.0.0.1:8080/health
 Réponse attendue (exemple) :
 
 ```json
-{"status":"ok","memory_zone":"green"}
+{"status":"ok","memory_zone":"green","model_loaded":true,"loaded_model_id":"mlx-community/…"}
 ```
 
 ### Métriques (Prometheus texte)

@@ -6,6 +6,10 @@ from pydantic import BaseModel, Field
 class HealthResponse(BaseModel):
     status: Literal["ok"] = "ok"
     memory_zone: Literal["green", "yellow", "red"]
+    model_loaded: bool = False
+    """True when MLX (or stub) weights are in memory for ``loaded_model_id``."""
+    loaded_model_id: str | None = None
+    """Hub id or path of the model currently resident in RAM; ``null`` if none."""
 
 
 class ModelItem(BaseModel):
