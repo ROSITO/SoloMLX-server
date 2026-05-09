@@ -38,9 +38,9 @@ class Settings(BaseSettings):
     moe_resident_experts: int = 0
     moe_resident_strategy: str = "l2"
     moe_single_expert_fastpath: bool = True
-    # mlx_lm logits processor: >1.0 discourages token repetition (collapse “BienBien…”).
-    # Set to 1.0 to disable.
-    generation_repetition_penalty: float = 1.12
+    # mlx_lm logits processor: >1.0 discourages repetition; can destabilize some quants — off by default.
+    # Enable e.g. MLXSERVE_GENERATION_REPETITION_PENALTY=1.08 when needed.
+    generation_repetition_penalty: float = 1.0
     generation_repetition_context_size: int = 64
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")

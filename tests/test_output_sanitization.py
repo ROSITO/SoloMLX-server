@@ -32,6 +32,11 @@ def test_sanitize_does_not_truncate_code_with_username_line():
     assert _sanitize_completion_text(text) == text
 
 
+def test_sanitize_preserves_ecosystem_literal():
+    text = "Le ecosystem: fragile et le user-space: OK."
+    assert _sanitize_completion_text(text) == text
+
+
 def test_sanitize_truncates_chatml_im_start_spill():
     text = "Oui, prêt.<|im_start|>user\npret"
     assert _sanitize_completion_text(text) == "Oui, prêt."

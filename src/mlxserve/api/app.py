@@ -88,19 +88,11 @@ def _metrics_model_label(model_id: str) -> str:
     return s if s else "unknown"
 
 
-# Only use markers that match chat transcripts, not substrings common in code
-# (e.g. "\nuser" matches "\nusername" and used to truncate Python mid-file).
-_ROLEPLAY_MARKERS = [
-    "assistant:",
-    "user:",
-    "system:",
-    "\nuser:",
-    "\nassistant:",
-    "\nsystem:",
-    " user:",
-    " assistant:",
-    " system:",
-]
+# Role-turn echoes: must not use naive ``.find("system:")`` (matches inside ``ecosystem:``).
+_ROLEPLAY_SPOOF_RE = re.compile(
+    r"(?:(?:^|\n)\s*|(?<!\w))(assistant|user|system)\s*:",
+    re.IGNORECASE,
+)
 
 def _strip_trailing_role_prefix_fragment(text: str) -> str:
     """Remove a trailing whitespace + incomplete 'assistant' token (e.g. ' Ass') from streaming."""
@@ -134,13 +126,9 @@ def _sanitize_completion_text(text: str) -> str:
                 changed = True
                 break
 
-    lowered = cleaned.lower()
-    cut = len(cleaned)
-    for marker in _ROLEPLAY_MARKERS:
-        idx = lowered.find(marker)
-        if idx != -1:
-            cut = min(cut, idx)
-    cleaned = cleaned[:cut].strip()
+    m = _ROLEPLAY_SPOOF_RE.search(cleaned)
+    if m:
+        cleaned = cleaned[: m.start()].rstrip()
 
     # Qwen / ChatML: degenerate generations repeat the next-turn header; cut before it.
     sp = cleaned.find("<|im_start|>")

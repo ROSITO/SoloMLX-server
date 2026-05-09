@@ -239,6 +239,13 @@
       border-radius: var(--radius-bubble) var(--radius-bubble) 6px var(--radius-bubble);
     }
     .msg-bubble.msg-rich { white-space: normal; }
+    /* During SSE: escaped plain text — do not run fence/markdown heuristics on partial output. */
+    .stream-live {
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
     .msg-rich .md-prose {
       white-space: pre-wrap;
       word-break: break-word;
@@ -1032,6 +1039,35 @@
       refreshCatalogs();
     });
 
+    function setAssistantBubbleStreaming(bubbleEl, rawText) {
+      bubbleEl.innerHTML =
+        '<div class="md-prose stream-live">' + escapeHtml(rawText) + "</div>";
+    }
+
+    function extractSseCompleteFrames(buffer) {
+      const sep = "\n\n";
+      const frames = [];
+      let rest = buffer;
+      let i;
+      while ((i = rest.indexOf(sep)) !== -1) {
+        frames.push(rest.slice(0, i));
+        rest = rest.slice(i + sep.length);
+      }
+      return { frames, rest };
+    }
+
+    /** Concatenate all `data:` lines in one SSE frame (handles `: ping` + `data:` in one frame). */
+    function concatSseDataPayload(frame) {
+      const lines = frame.split("\n");
+      const parts = [];
+      for (let li = 0; li < lines.length; li++) {
+        const line = lines[li];
+        if (line.startsWith("data:")) parts.push(line.slice(5).trimStart());
+      }
+      if (!parts.length) return null;
+      return parts.join("\n");
+    }
+
     function stripTrailingAssistantFragment(text) {
       const trimmed = text.replace(/\s+$/g, "");
       const m = /(\s+)(\S+)$/.exec(trimmed);
@@ -1056,9 +1092,10 @@
       while (cleaned.endsWith(eos)) cleaned = cleaned.slice(0, -eos.length).trimEnd();
       cleaned = cleaned.replace(/^\s*(assistant|user|system)\s*:?\s*/i, "");
       cleaned = cleaned.replace(/^\s*(assistant|user|system)\s*:?\s*/i, "");
-      const roleTurnRegex = /\n?\s*(assistant|user|system)\s*:/i;
-      const m = cleaned.match(roleTurnRegex);
-      if (m && m.index !== undefined) cleaned = cleaned.slice(0, m.index);
+      // Line-start roles only — avoids matching "system:" inside "ecosystem:" etc.
+      const roleTurnRegex = /(^|\n)(\s*)(assistant|user|system)\s*:/i;
+      const rm = roleTurnRegex.exec(cleaned);
+      if (rm && rm.index !== undefined) cleaned = cleaned.slice(0, rm.index);
       const lower = cleaned.toLowerCase().trimStart();
       const partials = ["a", "as", "ass", "assi", "assis", "assist", "assista", "assistan", "assistant"];
       if (partials.includes(lower)) return "";
@@ -1298,6 +1335,7 @@
       currentAssistantBubble = addMessage("assistant", "");
       let assistantRawText = "";
       let assistantShownText = "";
+      let pushedAssistant = false;
 
       try {
         const res = await fetch(baseUrl + "/v1/chat/completions", {
@@ -1318,13 +1356,23 @@
           const { done, value } = await reader.read();
           if (done) break;
           buffer += decoder.decode(value, { stream: true });
-          const parts = buffer.split("\n\n");
-          buffer = parts.pop() || "";
-          for (const part of parts) {
-            if (!part.startsWith("data: ")) continue;
-            const data = part.slice(6).trim();
+          const { frames, rest } = extractSseCompleteFrames(buffer);
+          buffer = rest;
+          for (const frame of frames) {
+            const data = concatSseDataPayload(frame);
+            if (data === null) continue;
             if (data === "[DONE]") {
-              conversation.push({ role: "assistant", content: assistantShownText || "(empty)" });
+              assistantShownText = sanitizeAssistantText(assistantRawText);
+              setBubbleContent(
+                currentAssistantBubble,
+                "assistant",
+                assistantShownText || assistantRawText || ""
+              );
+              conversation.push({
+                role: "assistant",
+                content: assistantShownText || assistantRawText || "(empty)"
+              });
+              pushedAssistant = true;
               continue;
             }
             try {
@@ -1336,16 +1384,26 @@
               const chunk = obj.choices?.[0]?.delta?.content || "";
               if (chunk) {
                 assistantRawText += chunk;
-                assistantShownText = sanitizeAssistantText(assistantRawText);
-                setBubbleContent(currentAssistantBubble, "assistant", assistantShownText);
+                setAssistantBubbleStreaming(currentAssistantBubble, assistantRawText);
                 messagesEl.scrollTop = messagesEl.scrollHeight;
               }
             } catch {
               assistantRawText += " [parse-error]";
-              assistantShownText = sanitizeAssistantText(assistantRawText);
-              setBubbleContent(currentAssistantBubble, "assistant", assistantShownText);
+              setAssistantBubbleStreaming(currentAssistantBubble, assistantRawText);
             }
           }
+        }
+        if (!pushedAssistant && assistantRawText) {
+          assistantShownText = sanitizeAssistantText(assistantRawText);
+          setBubbleContent(
+            currentAssistantBubble,
+            "assistant",
+            assistantShownText || assistantRawText
+          );
+          conversation.push({
+            role: "assistant",
+            content: assistantShownText || assistantRawText || "(empty)"
+          });
         }
       } catch (err) {
         currentAssistantBubble.innerHTML =
