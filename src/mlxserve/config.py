@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     hard_memory_gb: float = 15.0
     idle_unload_minutes: int = 15
     idle_unload_enabled: bool = True
+    preload_default_model: bool = False
     default_model: str = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
     runtime_backend: str = "auto"
     prefill_step_size: int = 1024

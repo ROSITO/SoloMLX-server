@@ -27,6 +27,8 @@ MLXSERVE_QUANTIZED_KV_START="${MLXSERVE_QUANTIZED_KV_START:-32}"
 MLXSERVE_MAX_MEMORY_GB="${MLXSERVE_MAX_MEMORY_GB:-14}"
 MLXSERVE_HARD_MEMORY_GB="${MLXSERVE_HARD_MEMORY_GB:-15}"
 MLXSERVE_IDLE_UNLOAD_ENABLED="${MLXSERVE_IDLE_UNLOAD_ENABLED:-true}"
+# Warm default model at process start (first HTTP chat is fast; boot takes longer).
+MLXSERVE_PRELOAD_DEFAULT_MODEL="${MLXSERVE_PRELOAD_DEFAULT_MODEL:-true}"
 
 usage() {
   echo "Usage: $0 {install|uninstall}" >&2
@@ -76,6 +78,7 @@ install() {
     <key>MLXSERVE_MAX_MEMORY_GB</key><string>${MLXSERVE_MAX_MEMORY_GB}</string>
     <key>MLXSERVE_HARD_MEMORY_GB</key><string>${MLXSERVE_HARD_MEMORY_GB}</string>
     <key>MLXSERVE_IDLE_UNLOAD_ENABLED</key><string>${MLXSERVE_IDLE_UNLOAD_ENABLED}</string>
+    <key>MLXSERVE_PRELOAD_DEFAULT_MODEL</key><string>${MLXSERVE_PRELOAD_DEFAULT_MODEL}</string>
   </dict>
   <key>ProgramArguments</key>
   <array>

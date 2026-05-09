@@ -5,6 +5,7 @@ import re
 import time
 import uuid
 from collections import defaultdict, deque
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -34,8 +35,26 @@ from mlxserve.models.schemas import (
 from mlxserve.models.catalog import machine_ram_gb, recommended_for_machine
 from mlxserve.runtime.stop_sequences import normalize_stop_sequences
 
-app = FastAPI(title="MLXServe", version="0.1.0")
 logger = logging.getLogger("mlxserve.api")
+
+
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    """Optional eager load so the first client request is not paying cold-start."""
+    if settings.preload_default_model:
+        model = settings.default_model
+        try:
+            await engine.ensure_model(model)
+            logger.info("Preloaded default model: %s", model)
+        except Exception:
+            logger.exception(
+                "Preload of default model failed; server continues without weights in RAM: %s",
+                model,
+            )
+    yield
+
+
+app = FastAPI(title="MLXServe", version="0.1.0", lifespan=_lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.cors_allow_origins.split(",")] if settings.cors_allow_origins else ["*"],

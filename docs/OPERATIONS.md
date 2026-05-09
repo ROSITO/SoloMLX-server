@@ -47,6 +47,8 @@ Le dépôt par défaut est `~/Documents/MLXServe/SoloMLX-server` ; sinon :
 `SOLOMLX_ROOT=/chemin/vers/SoloMLX-server ./scripts/install_launchagent_macos.sh install`  
 Les variables `MLXSERVE_*` peuvent être exportées **avant** la commande pour surcharger les défauts du script.
 
+Le script définit **`MLXSERVE_PRELOAD_DEFAULT_MODEL=true`** : le modèle par défaut est chargé **au boot** (la première requête chat n’attend plus le chargement MLX ; le démarrage du service est plus long et peut échouer en log si HF / RAM — le process continue).
+
 ---
 
 ## Vérifications rapides
