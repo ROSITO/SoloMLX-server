@@ -112,7 +112,14 @@ EOF
 
   echo "Logs: $OUT_LOG / $ERR_LOG"
   echo "Check: launchctl list | grep ${LABEL}"
-  echo "Health: curl -s http://${MLXSERVE_HOST}:${MLXSERVE_PORT}/health"
+  _health_host="${MLXSERVE_HOST}"
+  if [[ "${MLXSERVE_HOST}" == "0.0.0.0" ]]; then
+    _health_host="127.0.0.1"
+  fi
+  echo "Health (test local): curl -s http://${_health_host}:${MLXSERVE_PORT}/health"
+  if [[ "${MLXSERVE_HOST}" == "0.0.0.0" ]]; then
+    echo "Health (Tailscale / autre machine): curl -s http://<IP-de-cette-Mac>:${MLXSERVE_PORT}/health"
+  fi
 }
 
 case "$cmd" in
