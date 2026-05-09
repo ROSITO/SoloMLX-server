@@ -358,6 +358,9 @@ async def chat_completions(req: ChatCompletionRequest):
                 return delta
 
             try:
+                # SSE comment: flushes the stream immediately so clients do not sit on 0 bytes
+                # while the model loads (can take minutes for large MLX weights).
+                yield ": mlxserve\n\n"
                 async for chunk in engine.stream_text(
                     model=model,
                     messages=msg_dicts,
@@ -367,8 +370,6 @@ async def chat_completions(req: ChatCompletionRequest):
                     stop_sequences=stops or None,
                 ):
                     full_text += chunk
-                    if len(full_text) < 24:
-                        continue
                     sanitized = _sanitize_completion_text(full_text)
                     delta = _emit_delta(sanitized)
                     if not delta:
