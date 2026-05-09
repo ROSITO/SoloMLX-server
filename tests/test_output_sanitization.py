@@ -30,3 +30,13 @@ def test_sanitize_strips_trailing_assistant_word():
 def test_sanitize_does_not_truncate_code_with_username_line():
     text = "Voici du code.\nusername = 'x'\nprint(username)"
     assert _sanitize_completion_text(text) == text
+
+
+def test_sanitize_truncates_chatml_im_start_spill():
+    text = "Oui, prêt.<|im_start|>user\npret"
+    assert _sanitize_completion_text(text) == "Oui, prêt."
+
+
+def test_sanitize_strips_trailing_qwen_im_end():
+    text = "Réponse courte.<|im_end|>"
+    assert _sanitize_completion_text(text) == "Réponse courte."

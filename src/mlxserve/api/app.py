@@ -142,6 +142,14 @@ def _sanitize_completion_text(text: str) -> str:
             cut = min(cut, idx)
     cleaned = cleaned[:cut].strip()
 
+    # Qwen / ChatML: degenerate generations repeat the next-turn header; cut before it.
+    sp = cleaned.find("<|im_start|>")
+    if sp != -1:
+        cleaned = cleaned[:sp].rstrip()
+    eos_vis = "<|im_end|>"
+    while cleaned.endswith(eos_vis):
+        cleaned = cleaned[: -len(eos_vis)].rstrip()
+
     return _strip_trailing_role_prefix_fragment(cleaned)
 
 

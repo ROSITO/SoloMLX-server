@@ -1050,6 +1050,10 @@
     function sanitizeAssistantText(text) {
       if (!text) return "";
       let cleaned = text.replace(/\r/g, "");
+      const im = cleaned.indexOf("<|im_start|>");
+      if (im !== -1) cleaned = cleaned.slice(0, im).trimEnd();
+      const eos = "<|im_end|>";
+      while (cleaned.endsWith(eos)) cleaned = cleaned.slice(0, -eos.length).trimEnd();
       cleaned = cleaned.replace(/^\s*(assistant|user|system)\s*:?\s*/i, "");
       cleaned = cleaned.replace(/^\s*(assistant|user|system)\s*:?\s*/i, "");
       const roleTurnRegex = /\n?\s*(assistant|user|system)\s*:/i;

@@ -4,7 +4,7 @@ from queue import Queue
 from threading import Thread
 from typing import Any
 
-from mlxserve.runtime.stop_sequences import truncate_at_stop_sequences
+from mlxserve.runtime.stop_sequences import merge_chat_boundary_stops, truncate_at_stop_sequences
 from mlxserve.runtime.moe_offload import apply_moe_expert_offload
 
 
@@ -293,7 +293,8 @@ class MLXLMBackend(RuntimeBackend):
             kv_group_size=self.kv_group_size,
             quantized_kv_start=self.quantized_kv_start,
         )
-        trimmed, _ = truncate_at_stop_sequences(raw, stop_sequences)
+        merged = merge_chat_boundary_stops(self.model_name, stop_sequences)
+        trimmed, _ = truncate_at_stop_sequences(raw, merged)
         return trimmed
 
     async def stream(
@@ -308,6 +309,8 @@ class MLXLMBackend(RuntimeBackend):
             raise RuntimeError("Model is not loaded")
         from mlx_lm import stream_generate
         from mlx_lm.sample_utils import make_sampler
+
+        merged_stops = merge_chat_boundary_stops(self.model_name, stop_sequences)
 
         q: Queue[str | None] = Queue()
 
@@ -335,13 +338,13 @@ class MLXLMBackend(RuntimeBackend):
         while True:
             piece = await asyncio.to_thread(q.get)
             if piece is None:
-                trimmed, _ = truncate_at_stop_sequences(assembled, stop_sequences)
+                trimmed, _ = truncate_at_stop_sequences(assembled, merged_stops)
                 tail = trimmed[emitted_upto:]
                 if tail:
                     yield tail
                 break
             assembled += piece
-            trimmed, hit = truncate_at_stop_sequences(assembled, stop_sequences)
+            trimmed, hit = truncate_at_stop_sequences(assembled, merged_stops)
             chunk = trimmed[emitted_upto:]
             if chunk:
                 yield chunk
