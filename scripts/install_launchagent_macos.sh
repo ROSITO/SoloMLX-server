@@ -5,6 +5,9 @@
 # Default port is 8088 (not 8080) so MLXServe can coexist with stacks that bind host :8080
 # (e.g. SafePerform deploy-docker-web). Override: MLXSERVE_PORT=8080 ./scripts/install_launchagent_macos.sh install
 #
+# Default bind is 0.0.0.0 so Tailscale / LAN clients can reach the mini (e.g. OpenWebUI from a MacBook).
+# Local-only: MLXSERVE_HOST=127.0.0.1 SOLOMLX_ROOT=... ./scripts/install_launchagent_macos.sh install
+#
 # Install (defaults):  ./scripts/install_launchagent_macos.sh install
 # Uninstall:           ./scripts/install_launchagent_macos.sh uninstall
 #
@@ -25,7 +28,7 @@ OUT_LOG="${HOME}/Library/Logs/mlxserve.out.log"
 ERR_LOG="${HOME}/Library/Logs/mlxserve.err.log"
 
 # Defaults (override via env before calling this script)
-MLXSERVE_HOST="${MLXSERVE_HOST:-127.0.0.1}"
+MLXSERVE_HOST="${MLXSERVE_HOST:-0.0.0.0}"
 MLXSERVE_PORT="${MLXSERVE_PORT:-8088}"
 MLXSERVE_RUNTIME_BACKEND="${MLXSERVE_RUNTIME_BACKEND:-mlx}"
 MLXSERVE_DEFAULT_MODEL="${MLXSERVE_DEFAULT_MODEL:-mlx-community/Qwen2.5-7B-Instruct-4bit}"
