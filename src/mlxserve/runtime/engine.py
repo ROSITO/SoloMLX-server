@@ -36,6 +36,8 @@ class InferenceEngine:
                 moe_resident_experts=settings.moe_resident_experts,
                 moe_resident_strategy=settings.moe_resident_strategy,
                 moe_single_expert_fastpath=settings.moe_single_expert_fastpath,
+                repetition_penalty=settings.generation_repetition_penalty,
+                repetition_context_size=settings.generation_repetition_context_size,
             )
         if mode == "auto":
             try:
@@ -48,6 +50,8 @@ class InferenceEngine:
                     moe_resident_experts=settings.moe_resident_experts,
                     moe_resident_strategy=settings.moe_resident_strategy,
                     moe_single_expert_fastpath=settings.moe_single_expert_fastpath,
+                    repetition_penalty=settings.generation_repetition_penalty,
+                    repetition_context_size=settings.generation_repetition_context_size,
                 )
             except Exception:
                 return StubBackend()

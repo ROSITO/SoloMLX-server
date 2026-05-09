@@ -359,16 +359,14 @@ async def chat_completions(req: ChatCompletionRequest):
             full_text = ""
             emitted_len = 0
 
-            def _emit_delta(sanitized: str) -> str:
-                nonlocal emitted_len
-                delta = sanitized[emitted_len:]
-                emitted_len = len(sanitized)
-                return delta
-
             try:
                 # SSE comment: flushes the stream immediately so clients do not sit on 0 bytes
                 # while the model loads (can take minutes for large MLX weights).
                 yield ": mlxserve\n\n"
+                # Stream **raw** completion deltas. `_sanitize_completion_text` can shorten the
+                # string when it finds roleplay / ChatML markers; applying it per chunk made
+                # `emitted_len` track a shrinking prefix and re-slice past deltas → garbled UI
+                # (“Osal”, “OBien”, repeated fragments). Sanitize only for metrics / token counts.
                 async for chunk in engine.stream_text(
                     model=model,
                     messages=msg_dicts,
@@ -378,15 +376,10 @@ async def chat_completions(req: ChatCompletionRequest):
                     stop_sequences=stops or None,
                 ):
                     full_text += chunk
-                    # Buffer raw completions before sanitizing/emitting so marker-based truncation
-                    # in `_sanitize_completion_text` does not shorten `sanitized` past `emitted_len`
-                    # (which produced garbled incremental deltas when this gate was removed).
-                    if len(full_text) < 24:
-                        continue
-                    sanitized = _sanitize_completion_text(full_text)
-                    delta = _emit_delta(sanitized)
+                    delta = full_text[emitted_len:]
                     if not delta:
                         continue
+                    emitted_len = len(full_text)
                     payload = {
                         "id": completion_id,
                         "object": "chat.completion.chunk",
@@ -395,20 +388,6 @@ async def chat_completions(req: ChatCompletionRequest):
                         "choices": [{"index": 0, "delta": {"content": delta}, "finish_reason": None}],
                     }
                     yield f"data: {json.dumps(payload)}\n\n"
-
-                if full_text:
-                    sanitized = _sanitize_completion_text(full_text)
-                    delta = sanitized[emitted_len:]
-                    if delta:
-                        emitted_len = len(sanitized)
-                        payload = {
-                            "id": completion_id,
-                            "object": "chat.completion.chunk",
-                            "created": int(time.time()),
-                            "model": model,
-                            "choices": [{"index": 0, "delta": {"content": delta}, "finish_reason": None}],
-                        }
-                        yield f"data: {json.dumps(payload)}\n\n"
 
                 final_text = _sanitize_completion_text(full_text)
                 pt_done, ct_done = await engine.prompt_and_completion_token_counts(

@@ -214,6 +214,8 @@ class MLXLMBackend(RuntimeBackend):
         moe_resident_experts: int = 0,
         moe_resident_strategy: str = "l2",
         moe_single_expert_fastpath: bool = True,
+        repetition_penalty: float = 1.12,
+        repetition_context_size: int = 64,
     ) -> None:
         self.model_name: str | None = None
         self.model: Any = None
@@ -225,6 +227,28 @@ class MLXLMBackend(RuntimeBackend):
         self.moe_resident_experts = moe_resident_experts
         self.moe_resident_strategy = moe_resident_strategy
         self.moe_single_expert_fastpath = moe_single_expert_fastpath
+        self.repetition_penalty = repetition_penalty
+        self.repetition_context_size = repetition_context_size
+
+    def _mlx_sample_and_logits_kwargs(
+        self, max_tokens: int, temperature: float, top_p: float
+    ) -> dict[str, Any]:
+        from mlx_lm.sample_utils import make_logits_processors, make_sampler
+
+        out: dict[str, Any] = {
+            "max_tokens": max_tokens,
+            "sampler": make_sampler(temp=temperature, top_p=top_p),
+            "prefill_step_size": self.prefill_step_size,
+            "kv_bits": self.kv_bits,
+            "kv_group_size": self.kv_group_size,
+            "quantized_kv_start": self.quantized_kv_start,
+        }
+        if self.repetition_penalty is not None and self.repetition_penalty > 1.0:
+            out["logits_processors"] = make_logits_processors(
+                repetition_penalty=self.repetition_penalty,
+                repetition_context_size=self.repetition_context_size,
+            )
+        return out
 
     async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
         if self.tokenizer is None:
@@ -278,20 +302,15 @@ class MLXLMBackend(RuntimeBackend):
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("Model is not loaded")
         from mlx_lm import generate as mlx_generate
-        from mlx_lm.sample_utils import make_sampler
 
+        gen_kw = self._mlx_sample_and_logits_kwargs(max_tokens, temperature, top_p)
         raw = await asyncio.to_thread(
             mlx_generate,
             self.model,
             self.tokenizer,
             prompt=prompt,
-            max_tokens=max_tokens,
             verbose=False,
-            sampler=make_sampler(temp=temperature, top_p=top_p),
-            prefill_step_size=self.prefill_step_size,
-            kv_bits=self.kv_bits,
-            kv_group_size=self.kv_group_size,
-            quantized_kv_start=self.quantized_kv_start,
+            **gen_kw,
         )
         merged = merge_chat_boundary_stops(self.model_name, stop_sequences)
         trimmed, _ = truncate_at_stop_sequences(raw, merged)
@@ -308,9 +327,9 @@ class MLXLMBackend(RuntimeBackend):
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("Model is not loaded")
         from mlx_lm import stream_generate
-        from mlx_lm.sample_utils import make_sampler
 
         merged_stops = merge_chat_boundary_stops(self.model_name, stop_sequences)
+        gen_kw = self._mlx_sample_and_logits_kwargs(max_tokens, temperature, top_p)
 
         q: Queue[str | None] = Queue()
 
@@ -320,12 +339,7 @@ class MLXLMBackend(RuntimeBackend):
                     self.model,
                     self.tokenizer,
                     prompt=prompt,
-                    max_tokens=max_tokens,
-                    sampler=make_sampler(temp=temperature, top_p=top_p),
-                    prefill_step_size=self.prefill_step_size,
-                    kv_bits=self.kv_bits,
-                    kv_group_size=self.kv_group_size,
-                    quantized_kv_start=self.quantized_kv_start,
+                    **gen_kw,
                 ):
                     if item.text:
                         q.put(item.text)
