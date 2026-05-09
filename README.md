@@ -107,12 +107,29 @@ Préfixe commun : **`MLXSERVE_`**.
 |----------|------|--------|
 | `MLXSERVE_HOST` | Adresse d’écoute | `127.0.0.1` |
 | `MLXSERVE_PORT` | Port | `8080` |
-| `MLXSERVE_API_KEY` | Si non vide, exige `Authorization: Bearer …` | *(vide)* |
+| `MLXSERVE_API_KEY` | Si non vide, exige `Authorization: Bearer …` (ou JWT si configuré) | *(vide)* |
+| `MLXSERVE_JWT_HS256_SECRET` | Si non vide, accepte un JWT HS256 en plus de la clé statique | *(vide)* |
+| `MLXSERVE_JWT_AUDIENCE` | Audience attendue du JWT (optionnel) | *(vide)* |
 | `MLXSERVE_DEFAULT_MODEL` | Modèle Hugging Face / chemin MLX par défaut | `mlx-community/Qwen2.5-0.5B-Instruct-4bit` |
 | `MLXSERVE_RUNTIME_BACKEND` | `auto`, `mlx` ou `stub` | `auto` |
 | `MLXSERVE_MAX_MEMORY_GB` | Limite « soft » mémoire (Go) | `14.0` |
 | `MLXSERVE_HARD_MEMORY_GB` | Limite « hard » (Go) | `15.0` |
 | `MLXSERVE_IDLE_UNLOAD_MINUTES` | Décharge du modèle après inactivité | `15` |
+| `MLXSERVE_IDLE_UNLOAD_ENABLED` | `true` / `false` : activer la décharge idle | `true` |
+| `MLXSERVE_MEMORY_ADMISSION_TOKENS_PER_GB` | Heuristique pré-admission : `(prompt+max_tokens)/valeur` → Go estimés | `4500` |
+| `MLXSERVE_MEMORY_ADMISSION_CAP_GB` | Plafond de l’estimation pour la zone mémoire | `2.0` |
+| `MLXSERVE_MEMORY_ADMISSION_KV_ENABLED` | Ajouter une borne KV conservative à la pré-admission | `true` |
+| `MLXSERVE_MEMORY_ADMISSION_KV_MAX_GB` | Plafond Go de l’additif KV dans la pré-admission | `4.0` |
+| `MLXSERVE_MEMORY_ADMISSION_KV_LAYERS` | Couches supposées pour l’heuristique KV | `40` |
+| `MLXSERVE_MEMORY_ADMISSION_KV_HEADS` | Têtes KV supposées | `8` |
+| `MLXSERVE_MEMORY_ADMISSION_KV_HEAD_DIM` | Dimension de tête supposée | `128` |
+| `MLXSERVE_MEMORY_ADMISSION_KV_BYTES_PER_ELEMENT` | Octets par élément KV (ex. 2 ≈ fp16) | `2.0` |
+| `MLXSERVE_METRICS_LABEL_CHAT_BY_ZONE` | Exposer `mlxserve_chat_completions_labeled_total{memory_zone=…}` | `true` |
+| `MLXSERVE_METRICS_LABEL_CHAT_BY_MODEL` | Exposer les compteurs par modèle (cardinalité) | `true` |
+| `MLXSERVE_METRICS_MODEL_LABEL_MAX_LEN` | Longueur max du label `model` en Prometheus | `64` |
+| `MLXSERVE_MOE_NUM_EXPERTS` | Nombre d'experts pour backend `moe_stub` | `4` |
+| `MLXSERVE_MOE_TOP_K` | Top-k experts routés pour backend `moe_stub` | `2` |
+| `MLXSERVE_MOE_NUM_SHARED_EXPERTS` | Experts partagés toujours actifs (`moe_stub`) | `1` |
 | `MLXSERVE_CORS_ALLOW_ORIGINS` | Origines CORS, séparées par des virgules | `*` |
 | `MLXSERVE_RATE_LIMIT_PER_MINUTE` | Plafond de requêtes / fenêtre | `120` |
 | `MLXSERVE_PREFILL_STEP_SIZE` | Tuning préfill MLX | `1024` |
@@ -277,6 +294,21 @@ Fichier de registre : `~/.mlxserve/models/registry.json`.
 | [docs/OPERATIONS.md](docs/OPERATIONS.md) | Démarrage, health, curl, dépannage |
 | [docs/REVERSE_PROXY.md](docs/REVERSE_PROXY.md) | Caddy, Cloudflare, Tailscale |
 | [docs/CHAT_TRANSCRIPT_OUTPUT.md](docs/CHAT_TRANSCRIPT_OUTPUT.md) | Format chat, anti « roleplay », blocs code |
+| [docs/IMPROVEMENTS.md](docs/IMPROVEMENTS.md) | Backlog produit / technique priorisé |
+| [docs/GRAFANA.md](docs/GRAFANA.md) | Prometheus / Grafana |
+| [docs/INSTALL_HOMEBREW.md](docs/INSTALL_HOMEBREW.md) | Esquisse installation Homebrew |
+| [docs/MOE_MLX_ROADMAP.md](docs/MOE_MLX_ROADMAP.md) | Plan Go/No-Go MoE + MLX |
+| [docs/BENCH_PHASE1.md](docs/BENCH_PHASE1.md) | Procédure benchmark baseline (phase 1) |
+| [docs/MOE_PHASE2_PROTO.md](docs/MOE_PHASE2_PROTO.md) | Proto backend MoE minimal + A/B |
+| [docs/RD_DENSE_TO_MOE_PLAN.md](docs/RD_DENSE_TO_MOE_PLAN.md) | Plan R&D Dense -> MoE -> MLX |
+| [docs/RD_DECISIONS.md](docs/RD_DECISIONS.md) | Décisions de départ Sprint 1 R&D |
+| [docs/RD_SPRINTS_STATUS.md](docs/RD_SPRINTS_STATUS.md) | Suivi exécution des premiers sprints |
+| [docs/RD_CONVERSION_RUNBOOK.md](docs/RD_CONVERSION_RUNBOOK.md) | Runbook conversion Dense->MoE réelle |
+| [docs/RD_SPRINT3_STABILIZATION.md](docs/RD_SPRINT3_STABILIZATION.md) | Stabilisation MoE (training smoke) |
+| [docs/RD_SPRINT4_EVAL.md](docs/RD_SPRINT4_EVAL.md) | Eval A/B Dense vs MoE bridge |
+| [docs/RD_SPRINT5_TARGET_TRAINING.md](docs/RD_SPRINT5_TARGET_TRAINING.md) | Entrainement cible court (adapter MoE) |
+| [docs/RD_SPRINT6_SCALEUP.md](docs/RD_SPRINT6_SCALEUP.md) | Décision et plan de scale-up 7B |
+| [MEMORY.md.example](MEMORY.md.example) | Modèle de notes locales (MEMORY.md est ignoré par git) |
 | [docs/screenshots/](docs/screenshots/) | Captures d’écran de l’UI |
 | [AGENTS.md](AGENTS.md) | Architecture « agents » du dépôt |
 | [MEMORY.md](MEMORY.md) | Notes mémoire / produit (état, limites) |

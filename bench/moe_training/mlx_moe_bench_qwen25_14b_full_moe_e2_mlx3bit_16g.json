@@ -1,0 +1,21 @@
+{
+  "model_id": "bench/moe_conversion/qwen25_14b_full_qwen2_moe_e2_v3_mlx_3bit",
+  "model_summary": {
+    "model_type": "qwen2_moe"
+  },
+  "prompt_len_chars": 63,
+  "max_tokens": 32,
+  "output_len_chars": 115,
+  "load_wall_s": 20.2444,
+  "generate_wall_s": 7.2681,
+  "tokens_per_s": 4.4028,
+  "peak_memory_bytes_after_load": 15381664776,
+  "peak_memory_bytes_generate_phase": 15471080808,
+  "active_memory_bytes_end": 15381664776,
+  "peak_memory_gib_after_load": 14.325,
+  "peak_memory_gib_generate_phase": 14.409,
+  "active_memory_gib_end": 14.325,
+  "peak_memory_gib_worst": 14.409,
+  "ram_budget_gib": 16.0,
+  "within_ram_budget": true
+}

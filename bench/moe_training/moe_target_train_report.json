@@ -1,0 +1,20 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "layers": [
+    10
+  ],
+  "steps": 120,
+  "loss_start": 6.950891971588135,
+  "final_loss": 5.167419910430908,
+  "loss_delta": -1.7834720611572266,
+  "loss_min": 4.667120933532715,
+  "loss_max": 7.453040599822998,
+  "adapter_path": "bench/moe_training/moe_adapter_v1.pt",
+  "config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0,
+    "lr": 5e-05,
+    "device": "cpu"
+  }
+}

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import re
@@ -7,11 +8,14 @@ from collections import defaultdict, deque
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, PlainTextResponse, StreamingResponse
+from fastapi.exception_handlers import request_validation_exception_handler
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, StreamingResponse
 from starlette.middleware.cors import CORSMiddleware
 
 from mlxserve.api.deps import engine, guardian, metrics, model_manager, require_api_key
 from mlxserve.config import settings
+from mlxserve.memory.estimate import admission_memory_gb, heuristic_prompt_tokens
 from mlxserve.models.schemas import (
     ChatChoice,
     ChatCompletionRequest,
@@ -28,6 +32,7 @@ from mlxserve.models.schemas import (
     Usage,
 )
 from mlxserve.models.catalog import machine_ram_gb, recommended_for_machine
+from mlxserve.runtime.stop_sequences import normalize_stop_sequences
 
 app = FastAPI(title="MLXServe", version="0.1.0")
 logger = logging.getLogger("mlxserve.api")
@@ -57,6 +62,13 @@ def display_hf_model_id(raw: str) -> str:
         return encoded
     org, rest = encoded[:i], encoded[i + 2 :]
     return f"{org}/{rest.replace('--', '/')}"
+
+
+def _metrics_model_label(model_id: str) -> str:
+    s = model_id.replace("\\", "/").replace("\n", " ")[: settings.metrics_model_label_max_len]
+    return s if s else "unknown"
+
+
 # Only use markers that match chat transcripts, not substrings common in code
 # (e.g. "\nuser" matches "\nusername" and used to truncate Python mid-file).
 _ROLEPLAY_MARKERS = [
@@ -114,10 +126,50 @@ def _sanitize_completion_text(text: str) -> str:
     return _strip_trailing_role_prefix_fragment(cleaned)
 
 
+@app.exception_handler(HTTPException)
+async def mlxserve_http_exception_handler(request: Request, exc: HTTPException):
+    if not request.url.path.startswith("/v1/"):
+        return JSONResponse(status_code=exc.status_code, content={"detail": exc.detail})
+    err_type = (
+        "invalid_request_error"
+        if exc.status_code
+        in (400, 401, 403, 404, 405, 409, 413, 415, 422, 429)
+        else "server_error"
+    )
+    msg = exc.detail if isinstance(exc.detail, str) else str(exc.detail)
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"error": {"message": msg, "type": err_type, "code": None}},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def mlxserve_validation_handler(request: Request, exc: RequestValidationError):
+    if not request.url.path.startswith("/v1/"):
+        return await request_validation_exception_handler(request, exc)
+    errs = exc.errors()
+    if errs:
+        e0 = errs[0]
+        loc = ".".join(str(x) for x in e0.get("loc", ()))
+        msg = f"{e0.get('msg', 'Invalid request')}" + (f" ({loc})" if loc else "")
+    else:
+        msg = "Invalid request"
+    return JSONResponse(
+        status_code=422,
+        content={"error": {"message": msg, "type": "invalid_request_error", "code": None}},
+    )
+
+
 @app.middleware("http")
 async def security_and_metrics_middleware(request: Request, call_next):
+    request.state.request_id = str(uuid.uuid4())
     now = time.time()
-    key = request.headers.get("authorization") or request.client.host or "anonymous"
+    auth = request.headers.get("authorization") or ""
+    if auth.startswith("Bearer "):
+        raw = auth[7:].strip()
+        key = "bearer:" + hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
+    else:
+        key = request.client.host if request.client else "anonymous"
     bucket = _rate_bucket[key]
     window = 60.0
     while bucket and bucket[0] < now - window:
@@ -138,14 +190,24 @@ async def security_and_metrics_middleware(request: Request, call_next):
     snap = guardian.snapshot()
     metrics.memory_used_gb = snap.used_gb
     metrics.swap_used_gb = snap.swap_used_gb
+    metrics.macos_memory_pressure = (
+        0 if snap.pressure == "normal" else 1 if snap.pressure == "warning" else 2
+    )
     if response.status_code >= 400:
         metrics.errors_total += 1
-    logger.info("request path=%s status=%s latency_s=%.4f", request.url.path, response.status_code, duration)
+    logger.info(
+        "request id=%s path=%s status=%s latency_s=%.4f",
+        getattr(request.state, "request_id", "-"),
+        request.url.path,
+        response.status_code,
+        duration,
+    )
 
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "no-referrer"
     response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Request-ID"] = getattr(request.state, "request_id", "")
     return response
 
 
@@ -161,7 +223,11 @@ def chat_ui() -> HTMLResponse:
 
 @app.get("/metrics")
 def get_metrics() -> PlainTextResponse:
-    return PlainTextResponse(metrics.render_prometheus(), media_type="text/plain; version=0.0.4")
+    body = metrics.render_prometheus(
+        label_chat_zone=settings.metrics_label_chat_by_zone,
+        label_chat_model=settings.metrics_label_chat_by_model,
+    )
+    return PlainTextResponse(body, media_type="text/plain; version=0.0.4")
 
 
 @app.get("/v1/models", response_model=ModelsResponse, dependencies=[Depends(require_api_key)])
@@ -229,15 +295,32 @@ async def chat_completions(req: ChatCompletionRequest):
     metrics.chat_requests_total += 1
     chat_started = time.time()
     model = req.model or settings.default_model
-    estimated_gb = min(req.max_tokens / 10000.0, 1.0)
-    zone = guardian.classify(estimated_request_gb=estimated_gb)
+    msg_dicts = [{"role": m.role, "content": m.content} for m in req.messages]
+    prompt_est = heuristic_prompt_tokens(msg_dicts)
+    estimated_gb = admission_memory_gb(
+        prompt_est,
+        req.max_tokens,
+        settings.memory_admission_tokens_per_gb,
+        settings.memory_admission_cap_gb,
+        kv_enabled=settings.memory_admission_kv_enabled,
+        kv_max_gb=settings.memory_admission_kv_max_gb,
+        kv_layers=settings.memory_admission_kv_layers,
+        kv_heads=settings.memory_admission_kv_heads,
+        kv_head_dim=settings.memory_admission_kv_head_dim,
+        kv_bytes_per_element=settings.memory_admission_kv_bytes_per_element,
+    )
+    zone, deny_reason = guardian.classify_detail(estimated_request_gb=estimated_gb)
     if zone == "red":
+        metrics.observe_memory_chat_denied(deny_reason)
         raise HTTPException(status_code=503, detail="Server memory pressure too high")
 
-    if guardian.should_unload_idle(engine.last_used_ts):
+    if settings.idle_unload_enabled and guardian.should_unload_idle(engine.last_used_ts):
         engine.unload_model()
 
-    msg_dicts = [{"role": m.role, "content": m.content} for m in req.messages]
+    stops = normalize_stop_sequences(req.stop)
+    include_usage = bool(req.stream_options and req.stream_options.include_usage)
+    completion_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
+    mlabel = _metrics_model_label(model)
 
     if req.stream:
         async def event_stream():
@@ -250,43 +333,78 @@ async def chat_completions(req: ChatCompletionRequest):
                 emitted_len = len(sanitized)
                 return delta
 
-            async for chunk in engine.stream_text(
-                model=model,
-                messages=msg_dicts,
-                max_tokens=req.max_tokens,
-                temperature=req.temperature,
-                top_p=req.top_p,
-            ):
-                full_text += chunk
-                # Hold the first bytes so partial role labels never reach the client.
-                if len(full_text) < 24:
-                    continue
-                sanitized = _sanitize_completion_text(full_text)
-                delta = _emit_delta(sanitized)
-                if not delta:
-                    continue
-                payload = {
-                    "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
-                    "object": "chat.completion.chunk",
-                    "created": int(time.time()),
-                    "model": model,
-                    "choices": [{"index": 0, "delta": {"content": delta}, "finish_reason": None}],
-                }
-                yield f"data: {json.dumps(payload)}\n\n"
-
-            if full_text:
-                sanitized = _sanitize_completion_text(full_text)
-                delta = sanitized[emitted_len:]
-                if delta:
-                    emitted_len = len(sanitized)
+            try:
+                async for chunk in engine.stream_text(
+                    model=model,
+                    messages=msg_dicts,
+                    max_tokens=req.max_tokens,
+                    temperature=req.temperature,
+                    top_p=req.top_p,
+                    stop_sequences=stops or None,
+                ):
+                    full_text += chunk
+                    if len(full_text) < 24:
+                        continue
+                    sanitized = _sanitize_completion_text(full_text)
+                    delta = _emit_delta(sanitized)
+                    if not delta:
+                        continue
                     payload = {
-                        "id": f"chatcmpl-{uuid.uuid4().hex[:12]}",
+                        "id": completion_id,
                         "object": "chat.completion.chunk",
                         "created": int(time.time()),
                         "model": model,
                         "choices": [{"index": 0, "delta": {"content": delta}, "finish_reason": None}],
                     }
                     yield f"data: {json.dumps(payload)}\n\n"
+
+                if full_text:
+                    sanitized = _sanitize_completion_text(full_text)
+                    delta = sanitized[emitted_len:]
+                    if delta:
+                        emitted_len = len(sanitized)
+                        payload = {
+                            "id": completion_id,
+                            "object": "chat.completion.chunk",
+                            "created": int(time.time()),
+                            "model": model,
+                            "choices": [{"index": 0, "delta": {"content": delta}, "finish_reason": None}],
+                        }
+                        yield f"data: {json.dumps(payload)}\n\n"
+
+                final_text = _sanitize_completion_text(full_text)
+                pt_done, ct_done = await engine.prompt_and_completion_token_counts(
+                    model, msg_dicts, final_text
+                )
+                finish_reason = "length" if ct_done >= req.max_tokens else "stop"
+                final_chunk: dict = {
+                    "id": completion_id,
+                    "object": "chat.completion.chunk",
+                    "created": int(time.time()),
+                    "model": model,
+                    "choices": [{"index": 0, "delta": {}, "finish_reason": finish_reason}],
+                }
+                if include_usage:
+                    final_chunk["usage"] = {
+                        "prompt_tokens": max(0, pt_done),
+                        "completion_tokens": max(0, ct_done),
+                        "total_tokens": max(0, pt_done) + max(0, ct_done),
+                    }
+                yield f"data: {json.dumps(final_chunk)}\n\n"
+            finally:
+                metrics.observe_chat_completion(
+                    zone,
+                    mlabel,
+                    label_zone=settings.metrics_label_chat_by_zone,
+                    label_model=settings.metrics_label_chat_by_model,
+                )
+                try:
+                    ft = _sanitize_completion_text(full_text)
+                    _, ctk = await engine.prompt_and_completion_token_counts(model, msg_dicts, ft)
+                    metrics.generated_tokens_total += max(0, ctk)
+                    metrics.chat_generation_tps = max(0, ctk) / max(1e-6, (time.time() - chat_started))
+                except Exception:
+                    pass
             yield "data: [DONE]\n\n"
 
         return StreamingResponse(event_stream(), media_type="text/event-stream")
@@ -297,20 +415,30 @@ async def chat_completions(req: ChatCompletionRequest):
         max_tokens=req.max_tokens,
         temperature=req.temperature,
         top_p=req.top_p,
+        stop_sequences=stops or None,
     )
     text = _sanitize_completion_text(text)
-    prompt_for_estimate = "\n".join(f"{m.role}: {m.content}" for m in req.messages)
+    prompt_tokens, completion_tokens = await engine.prompt_and_completion_token_counts(
+        model, msg_dicts, text
+    )
     usage = Usage(
-        prompt_tokens=max(1, len(prompt_for_estimate.split())),
-        completion_tokens=max(1, len(text.split())),
-        total_tokens=max(2, len(prompt_for_estimate.split()) + len(text.split())),
+        prompt_tokens=max(0, prompt_tokens),
+        completion_tokens=max(0, completion_tokens),
+        total_tokens=max(0, prompt_tokens) + max(0, completion_tokens),
     )
     metrics.generated_tokens_total += usage.completion_tokens
     metrics.chat_generation_tps = usage.completion_tokens / max(1e-6, (time.time() - chat_started))
+    metrics.observe_chat_completion(
+        zone,
+        mlabel,
+        label_zone=settings.metrics_label_chat_by_zone,
+        label_model=settings.metrics_label_chat_by_model,
+    )
+    finish_reason = "length" if completion_tokens >= req.max_tokens else "stop"
     response = ChatCompletionResponse(
-        id=f"chatcmpl-{uuid.uuid4().hex[:12]}",
+        id=completion_id,
         model=model,
-        choices=[ChatChoice(message=ChoiceMessage(content=text))],
+        choices=[ChatChoice(message=ChoiceMessage(content=text), finish_reason=finish_reason)],
         usage=usage,
     )
     return response

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "q_reasoning_pct",
+    "prompt": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul."
+  },
+  {
+    "id": "q_code_refactor",
+    "prompt": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple."
+  },
+  {
+    "id": "q_system_design",
+    "prompt": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte."
+  },
+  {
+    "id": "q_security",
+    "prompt": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation."
+  },
+  {
+    "id": "q_summarization",
+    "prompt": "Resume les compromis entre qualite, latence et cout d'inference en 6 points."
+  }
+]

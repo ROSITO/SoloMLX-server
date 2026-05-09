@@ -30,6 +30,10 @@ def test_chat_non_stream():
         assert payload["object"] == "chat.completion"
         assert payload["choices"][0]["message"]["role"] == "assistant"
         assert isinstance(payload["choices"][0]["message"]["content"], str)
+        usage = payload["usage"]
+        assert usage["total_tokens"] == usage["prompt_tokens"] + usage["completion_tokens"]
+        assert usage["prompt_tokens"] >= 0
+        assert usage["completion_tokens"] >= 0
     finally:
         guardian.soft_limit_gb, guardian.hard_limit_gb, engine.backend, engine.loaded_model = original
 

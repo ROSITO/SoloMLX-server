@@ -1,0 +1,20 @@
+{
+  "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+  "layers": [
+    10
+  ],
+  "steps": 60,
+  "loss_start": 5.181019306182861,
+  "final_loss": 0.9298812747001648,
+  "loss_delta": -4.2511380314826965,
+  "loss_min": 0.4718765914440155,
+  "loss_max": 5.645254611968994,
+  "adapter_path": "bench/moe_training/mistral7b_moe_adapter_v1_long.pt",
+  "config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0,
+    "lr": 2e-05,
+    "device": "mps"
+  }
+}

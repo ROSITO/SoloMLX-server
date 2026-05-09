@@ -1,0 +1,87 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0
+  },
+  "dense": {
+    "avg_loss": 5.179890251159668,
+    "p95_latency_ms": 672.2908329975326
+  },
+  "moe_bridge": {
+    "avg_loss": 5.179890251159668,
+    "p95_latency_ms": 644.9640829814598
+  },
+  "delta": {
+    "avg_loss": 0.0,
+    "p95_latency_ms": -27.326750016072765
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.391437530517578,
+      "latency_ms": 672.2908329975326,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120 a 186\"\n\nPour l'utilisateur, la r\u00e9ponse est: \"120"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.872349262237549,
+      "latency_ms": 619.5202920062002,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.260509967803955,
+      "latency_ms": 608.7181670009159,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.743217945098877,
+      "latency_ms": 608.9451250154525,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.631936550140381,
+      "latency_ms": 621.4905419910792,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.391437530517578,
+      "latency_ms": 644.9640829814598,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120 a 186\"\n\nPour l'utilisateur, la r\u00e9ponse est: \"120"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.872349262237549,
+      "latency_ms": 629.1994579951279,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.260509967803955,
+      "latency_ms": 622.9147500125691,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.743217945098877,
+      "latency_ms": 622.1430419827811,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.631936550140381,
+      "latency_ms": 617.2187080082949,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ]
+}

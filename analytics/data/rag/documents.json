@@ -1,0 +1,855 @@
+[
+  {
+    "doc_id": "player:580",
+    "player_id": 580,
+    "days": 90,
+    "text": "Player 580. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.411764705882353 stress=0.5882352941176471 fatigue_rolling_7=1.2682072829131652 player_load_total=129.8657142857143 player_load_total_rolling_7=134.1229591836735 hsr_distance=78.30190476190477 hsr_distance_rolling_7=61.19486394557823. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 0.43/10. Charge GPS moyenne (player load): 179.64. Distance HSR moyenne: 51.70. Moyenne mobile fatigue (7 j) la plus récente: 1.57.",
+    "metrics": {
+      "fatigue": 1.411764705882353,
+      "fatigue_rolling_7": 1.2682072829131652,
+      "hsr_distance": 78.30190476190477,
+      "hsr_distance_rolling_7": 61.19486394557823,
+      "player_load_total": 129.8657142857143,
+      "player_load_total_rolling_7": 134.1229591836735,
+      "stress": 0.5882352941176471
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 0.43/10. Charge GPS moyenne (player load): 179.64. Distance HSR moyenne: 51.70. Moyenne mobile fatigue (7 j) la plus récente: 1.57."
+  },
+  {
+    "doc_id": "player:581",
+    "player_id": 581,
+    "days": 90,
+    "text": "Player 581. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.7857142857142858 stress=1.0714285714285714 fatigue_rolling_7=1.645748299319728 player_load_total=122.5759090909091 player_load_total_rolling_7=112.50064935064938 hsr_distance=77.24454545454545 hsr_distance_rolling_7=49.16603896103896. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 1.29/10. Charge GPS moyenne (player load): 65.67. Distance HSR moyenne: 25.69. Moyenne mobile fatigue (7 j) la plus récente: 1.57.",
+    "metrics": {
+      "fatigue": 1.7857142857142858,
+      "fatigue_rolling_7": 1.645748299319728,
+      "hsr_distance": 77.24454545454545,
+      "hsr_distance_rolling_7": 49.16603896103896,
+      "player_load_total": 122.5759090909091,
+      "player_load_total_rolling_7": 112.50064935064938,
+      "stress": 1.0714285714285714
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 1.29/10. Charge GPS moyenne (player load): 65.67. Distance HSR moyenne: 25.69. Moyenne mobile fatigue (7 j) la plus récente: 1.57."
+  },
+  {
+    "doc_id": "player:582",
+    "player_id": 582,
+    "days": 90,
+    "text": "Player 582. Period: 90 days. Last metric date: 2026-03-29. fatigue=2.0 stress=1.8 fatigue_rolling_7=2.2 player_load_total=133.495 player_load_total_rolling_7=123.93178571428572 hsr_distance=108.42875 hsr_distance_rolling_7=71.01375. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 2.00/10, stress moyen 1.80/10. Charge GPS moyenne (player load): 133.92. Distance HSR moyenne: 62.00. Moyenne mobile fatigue (7 j) la plus récente: 2.00.",
+    "metrics": {
+      "fatigue": 2.0,
+      "fatigue_rolling_7": 2.2,
+      "hsr_distance": 108.42875,
+      "hsr_distance_rolling_7": 71.01375,
+      "player_load_total": 133.495,
+      "player_load_total_rolling_7": 123.93178571428572,
+      "stress": 1.8
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 2.00/10, stress moyen 1.80/10. Charge GPS moyenne (player load): 133.92. Distance HSR moyenne: 62.00. Moyenne mobile fatigue (7 j) la plus récente: 2.00."
+  },
+  {
+    "doc_id": "player:583",
+    "player_id": 583,
+    "days": 90,
+    "text": "Player 583. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.7058823529411765 stress=0.6470588235294118 fatigue_rolling_7=0.7690476190476191 player_load_total=202.51307692307688 player_load_total_rolling_7=161.42393772893774 hsr_distance=42.705384615384624 hsr_distance_rolling_7=39.427673992673995. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.57/10, stress moyen 0.14/10. Charge GPS moyenne (player load): 29.45. Distance HSR moyenne: 10.53. Moyenne mobile fatigue (7 j) la plus récente: 0.57.",
+    "metrics": {
+      "fatigue": 0.7058823529411765,
+      "fatigue_rolling_7": 0.7690476190476191,
+      "hsr_distance": 42.705384615384624,
+      "hsr_distance_rolling_7": 39.427673992673995,
+      "player_load_total": 202.51307692307688,
+      "player_load_total_rolling_7": 161.42393772893774,
+      "stress": 0.6470588235294118
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.57/10, stress moyen 0.14/10. Charge GPS moyenne (player load): 29.45. Distance HSR moyenne: 10.53. Moyenne mobile fatigue (7 j) la plus récente: 0.57."
+  },
+  {
+    "doc_id": "player:584",
+    "player_id": 584,
+    "days": 90,
+    "text": "Player 584. Period: 90 days. Last metric date: 2026-03-04. fatigue=1.3636363636363635 stress=0.0 fatigue_rolling_7=1.4887445887445887 player_load_total=154.9442857142857 player_load_total_rolling_7=125.37800000000001 hsr_distance=139.78785714285715 hsr_distance_rolling_7=83.5928367346939. Report: Période 7d jusqu'au 2026-03-04: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 116.60. Distance HSR moyenne: 43.31. Moyenne mobile fatigue (7 j) la plus récente: 1.29.",
+    "metrics": {
+      "fatigue": 1.3636363636363635,
+      "fatigue_rolling_7": 1.4887445887445887,
+      "hsr_distance": 139.78785714285715,
+      "hsr_distance_rolling_7": 83.5928367346939,
+      "player_load_total": 154.9442857142857,
+      "player_load_total_rolling_7": 125.37800000000001,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-04: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 116.60. Distance HSR moyenne: 43.31. Moyenne mobile fatigue (7 j) la plus récente: 1.29."
+  },
+  {
+    "doc_id": "player:585",
+    "player_id": 585,
+    "days": 90,
+    "text": "Player 585. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.6 stress=1.0 fatigue_rolling_7=1.2866666666666666 player_load_total=128.61874999999998 player_load_total_rolling_7=160.51517857142855 hsr_distance=140.235 hsr_distance_rolling_7=180.80089285714286. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.60/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 223.27. Distance HSR moyenne: 261.85. Moyenne mobile fatigue (7 j) la plus récente: 1.60.",
+    "metrics": {
+      "fatigue": 1.6,
+      "fatigue_rolling_7": 1.2866666666666666,
+      "hsr_distance": 140.235,
+      "hsr_distance_rolling_7": 180.80089285714286,
+      "player_load_total": 128.61874999999998,
+      "player_load_total_rolling_7": 160.51517857142855,
+      "stress": 1.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.60/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 223.27. Distance HSR moyenne: 261.85. Moyenne mobile fatigue (7 j) la plus récente: 1.60."
+  },
+  {
+    "doc_id": "player:586",
+    "player_id": 586,
+    "days": 90,
+    "text": "Player 586. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.2142857142857142 stress=1.5 fatigue_rolling_7=1.0886054421768707 player_load_total=164.6 player_load_total_rolling_7=150.12911564625853 hsr_distance=69.65095238095238 hsr_distance_rolling_7=48.285782312925164. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 1.57/10. Charge GPS moyenne (player load): 148.93. Distance HSR moyenne: 28.68. Moyenne mobile fatigue (7 j) la plus récente: 1.43.",
+    "metrics": {
+      "fatigue": 1.2142857142857142,
+      "fatigue_rolling_7": 1.0886054421768707,
+      "hsr_distance": 69.65095238095238,
+      "hsr_distance_rolling_7": 48.285782312925164,
+      "player_load_total": 164.6,
+      "player_load_total_rolling_7": 150.12911564625853,
+      "stress": 1.5
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 1.57/10. Charge GPS moyenne (player load): 148.93. Distance HSR moyenne: 28.68. Moyenne mobile fatigue (7 j) la plus récente: 1.43."
+  },
+  {
+    "doc_id": "player:587",
+    "player_id": 587,
+    "days": 90,
+    "text": "Player 587. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.9411764705882353 stress=0.0 fatigue_rolling_7=1.0950980392156868 player_load_total=136.66173913043477 player_load_total_rolling_7=117.43442236024845 hsr_distance=185.6908695652174 hsr_distance_rolling_7=118.01824844720498. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.57/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 98.92. Distance HSR moyenne: 110.89. Moyenne mobile fatigue (7 j) la plus récente: 0.57.",
+    "metrics": {
+      "fatigue": 0.9411764705882353,
+      "fatigue_rolling_7": 1.0950980392156868,
+      "hsr_distance": 185.6908695652174,
+      "hsr_distance_rolling_7": 118.01824844720498,
+      "player_load_total": 136.66173913043477,
+      "player_load_total_rolling_7": 117.43442236024845,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.57/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 98.92. Distance HSR moyenne: 110.89. Moyenne mobile fatigue (7 j) la plus récente: 0.57."
+  },
+  {
+    "doc_id": "player:588",
+    "player_id": 588,
+    "days": 90,
+    "text": "Player 588. Period: 90 days. Last metric date: 2026-03-18. fatigue=1.2857142857142858 stress=0.0 fatigue_rolling_7=1.1170068027210884 player_load_total=199.42333333333337 player_load_total_rolling_7=136.19933333333333 hsr_distance=117.1991666666667 hsr_distance_rolling_7=69.89214285714284. Report: Période 7d jusqu'au 2026-03-02: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 169.99. Distance HSR moyenne: 25.16. Moyenne mobile fatigue (7 j) la plus récente: 1.29.",
+    "metrics": {
+      "fatigue": 1.2857142857142858,
+      "fatigue_rolling_7": 1.1170068027210884,
+      "hsr_distance": 117.1991666666667,
+      "hsr_distance_rolling_7": 69.89214285714284,
+      "player_load_total": 199.42333333333337,
+      "player_load_total_rolling_7": 136.19933333333333,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-02: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 169.99. Distance HSR moyenne: 25.16. Moyenne mobile fatigue (7 j) la plus récente: 1.29."
+  },
+  {
+    "doc_id": "player:589",
+    "player_id": 589,
+    "days": 90,
+    "text": "Player 589. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.5 stress=0.0 fatigue_rolling_7=1.511111111111111 player_load_total=95.1211111111111 player_load_total_rolling_7=116.24711111111111 hsr_distance=82.51444444444445 hsr_distance_rolling_7=69.17507936507938. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.50/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 148.74. Distance HSR moyenne: 67.88. Moyenne mobile fatigue (7 j) la plus récente: 1.50.",
+    "metrics": {
+      "fatigue": 1.5,
+      "fatigue_rolling_7": 1.511111111111111,
+      "hsr_distance": 82.51444444444445,
+      "hsr_distance_rolling_7": 69.17507936507938,
+      "player_load_total": 95.1211111111111,
+      "player_load_total_rolling_7": 116.24711111111111,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.50/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 148.74. Distance HSR moyenne: 67.88. Moyenne mobile fatigue (7 j) la plus récente: 1.50."
+  },
+  {
+    "doc_id": "player:590",
+    "player_id": 590,
+    "days": 90,
+    "text": "Player 590. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.11764705882352941 stress=0.0 fatigue_rolling_7=0.12044817927170867 player_load_total=156.06380952380954 player_load_total_rolling_7=159.47308843537417 hsr_distance=181.3419047619048 hsr_distance_rolling_7=153.77917006802718. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 117.42. Distance HSR moyenne: 118.02. Moyenne mobile fatigue (7 j) la plus récente: 0.00.",
+    "metrics": {
+      "fatigue": 0.11764705882352941,
+      "fatigue_rolling_7": 0.12044817927170867,
+      "hsr_distance": 181.3419047619048,
+      "hsr_distance_rolling_7": 153.77917006802718,
+      "player_load_total": 156.06380952380954,
+      "player_load_total_rolling_7": 159.47308843537417,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 117.42. Distance HSR moyenne: 118.02. Moyenne mobile fatigue (7 j) la plus récente: 0.00."
+  },
+  {
+    "doc_id": "player:591",
+    "player_id": 591,
+    "days": 90,
+    "text": "Player 591. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.5333333333333333 stress=0.4666666666666667 fatigue_rolling_7=0.4653968253968253 player_load_total=None player_load_total_rolling_7=None hsr_distance=None hsr_distance_rolling_7=None. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.57/10, stress moyen 0.29/10. Moyenne mobile fatigue (7 j) la plus récente: 0.57.",
+    "metrics": {
+      "fatigue": 0.5333333333333333,
+      "fatigue_rolling_7": 0.4653968253968253,
+      "stress": 0.4666666666666667
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.57/10, stress moyen 0.29/10. Moyenne mobile fatigue (7 j) la plus récente: 0.57."
+  },
+  {
+    "doc_id": "player:592",
+    "player_id": 592,
+    "days": 90,
+    "text": "Player 592. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.2857142857142857 stress=0.14285714285714285 fatigue_rolling_7=0.2479591836734694 player_load_total=None player_load_total_rolling_7=None hsr_distance=None hsr_distance_rolling_7=None. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.29/10, stress moyen 0.14/10. Moyenne mobile fatigue (7 j) la plus récente: 0.29.",
+    "metrics": {
+      "fatigue": 0.2857142857142857,
+      "fatigue_rolling_7": 0.2479591836734694,
+      "stress": 0.14285714285714285
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.29/10, stress moyen 0.14/10. Moyenne mobile fatigue (7 j) la plus récente: 0.29."
+  },
+  {
+    "doc_id": "player:593",
+    "player_id": 593,
+    "days": 90,
+    "text": "Player 593. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.1538461538461537 stress=0.6923076923076923 fatigue_rolling_7=1.0758241758241758 player_load_total=152.99772727272727 player_load_total_rolling_7=166.15720779220774 hsr_distance=224.4759090909091 hsr_distance_rolling_7=241.35793290043293. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.71/10. Charge GPS moyenne (player load): 159.02. Distance HSR moyenne: 117.50. Moyenne mobile fatigue (7 j) la plus récente: 1.14.",
+    "metrics": {
+      "fatigue": 1.1538461538461537,
+      "fatigue_rolling_7": 1.0758241758241758,
+      "hsr_distance": 224.4759090909091,
+      "hsr_distance_rolling_7": 241.35793290043293,
+      "player_load_total": 152.99772727272727,
+      "player_load_total_rolling_7": 166.15720779220774,
+      "stress": 0.6923076923076923
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.71/10. Charge GPS moyenne (player load): 159.02. Distance HSR moyenne: 117.50. Moyenne mobile fatigue (7 j) la plus récente: 1.14."
+  },
+  {
+    "doc_id": "player:594",
+    "player_id": 594,
+    "days": 90,
+    "text": "Player 594. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.1875 stress=0.5 fatigue_rolling_7=1.3224702380952382 player_load_total=156.89888888888888 player_load_total_rolling_7=160.2582380952381 hsr_distance=145.91111111111107 hsr_distance_rolling_7=142.08703174603176. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 0.43/10. Charge GPS moyenne (player load): 84.03. Distance HSR moyenne: 32.69. Moyenne mobile fatigue (7 j) la plus récente: 1.00.",
+    "metrics": {
+      "fatigue": 1.1875,
+      "fatigue_rolling_7": 1.3224702380952382,
+      "hsr_distance": 145.91111111111107,
+      "hsr_distance_rolling_7": 142.08703174603176,
+      "player_load_total": 156.89888888888888,
+      "player_load_total_rolling_7": 160.2582380952381,
+      "stress": 0.5
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 0.43/10. Charge GPS moyenne (player load): 84.03. Distance HSR moyenne: 32.69. Moyenne mobile fatigue (7 j) la plus récente: 1.00."
+  },
+  {
+    "doc_id": "player:595",
+    "player_id": 595,
+    "days": 90,
+    "text": "Player 595. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.2941176470588236 stress=1.0 fatigue_rolling_7=1.1778711484593838 player_load_total=140.0004347826087 player_load_total_rolling_7=152.57357142857146 hsr_distance=207.46521739130435 hsr_distance_rolling_7=195.14462732919256. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 1.14/10. Charge GPS moyenne (player load): 250.45. Distance HSR moyenne: 286.14. Moyenne mobile fatigue (7 j) la plus récente: 1.43.",
+    "metrics": {
+      "fatigue": 1.2941176470588236,
+      "fatigue_rolling_7": 1.1778711484593838,
+      "hsr_distance": 207.46521739130435,
+      "hsr_distance_rolling_7": 195.14462732919256,
+      "player_load_total": 140.0004347826087,
+      "player_load_total_rolling_7": 152.57357142857146,
+      "stress": 1.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 1.14/10. Charge GPS moyenne (player load): 250.45. Distance HSR moyenne: 286.14. Moyenne mobile fatigue (7 j) la plus récente: 1.43."
+  },
+  {
+    "doc_id": "player:596",
+    "player_id": 596,
+    "days": 90,
+    "text": "Player 596. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.6 stress=0.2 fatigue_rolling_7=1.465952380952381 player_load_total=127.52052631578947 player_load_total_rolling_7=155.4074786967419 hsr_distance=108.27210526315787 hsr_distance_rolling_7=83.72756390977443. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 185.40. Distance HSR moyenne: 104.34. Moyenne mobile fatigue (7 j) la plus récente: 1.43.",
+    "metrics": {
+      "fatigue": 1.6,
+      "fatigue_rolling_7": 1.465952380952381,
+      "hsr_distance": 108.27210526315787,
+      "hsr_distance_rolling_7": 83.72756390977443,
+      "player_load_total": 127.52052631578947,
+      "player_load_total_rolling_7": 155.4074786967419,
+      "stress": 0.2
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 185.40. Distance HSR moyenne: 104.34. Moyenne mobile fatigue (7 j) la plus récente: 1.43."
+  },
+  {
+    "doc_id": "player:597",
+    "player_id": 597,
+    "days": 90,
+    "text": "Player 597. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.0625 stress=0.4375 fatigue_rolling_7=1.0757440476190476 player_load_total=174.18041666666667 player_load_total_rolling_7=157.10774999999998 hsr_distance=119.50583333333334 hsr_distance_rolling_7=86.09861904761904. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 183.41. Distance HSR moyenne: 160.83. Moyenne mobile fatigue (7 j) la plus récente: 1.00.",
+    "metrics": {
+      "fatigue": 1.0625,
+      "fatigue_rolling_7": 1.0757440476190476,
+      "hsr_distance": 119.50583333333334,
+      "hsr_distance_rolling_7": 86.09861904761904,
+      "player_load_total": 174.18041666666667,
+      "player_load_total_rolling_7": 157.10774999999998,
+      "stress": 0.4375
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 183.41. Distance HSR moyenne: 160.83. Moyenne mobile fatigue (7 j) la plus récente: 1.00."
+  },
+  {
+    "doc_id": "player:598",
+    "player_id": 598,
+    "days": 90,
+    "text": "Player 598. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.875 stress=0.5 fatigue_rolling_7=0.7488095238095237 player_load_total=201.06833333333336 player_load_total_rolling_7=147.36161904761903 hsr_distance=145.42333333333332 hsr_distance_rolling_7=89.84719047619046. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.86/10, stress moyen 0.57/10. Charge GPS moyenne (player load): 178.46. Distance HSR moyenne: 144.81. Moyenne mobile fatigue (7 j) la plus récente: 0.86.",
+    "metrics": {
+      "fatigue": 0.875,
+      "fatigue_rolling_7": 0.7488095238095237,
+      "hsr_distance": 145.42333333333332,
+      "hsr_distance_rolling_7": 89.84719047619046,
+      "player_load_total": 201.06833333333336,
+      "player_load_total_rolling_7": 147.36161904761903,
+      "stress": 0.5
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.86/10, stress moyen 0.57/10. Charge GPS moyenne (player load): 178.46. Distance HSR moyenne: 144.81. Moyenne mobile fatigue (7 j) la plus récente: 0.86."
+  },
+  {
+    "doc_id": "player:599",
+    "player_id": 599,
+    "days": 90,
+    "text": "Player 599. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.8 stress=0.6 fatigue_rolling_7=0.7433333333333334 player_load_total=149.97142857142856 player_load_total_rolling_7=132.9122448979592 hsr_distance=133.91 hsr_distance_rolling_7=84.13836734693875. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.80/10, stress moyen 0.60/10. Charge GPS moyenne (player load): 70.37. Distance HSR moyenne: 26.35. Moyenne mobile fatigue (7 j) la plus récente: 0.80.",
+    "metrics": {
+      "fatigue": 0.8,
+      "fatigue_rolling_7": 0.7433333333333334,
+      "hsr_distance": 133.91,
+      "hsr_distance_rolling_7": 84.13836734693875,
+      "player_load_total": 149.97142857142856,
+      "player_load_total_rolling_7": 132.9122448979592,
+      "stress": 0.6
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.80/10, stress moyen 0.60/10. Charge GPS moyenne (player load): 70.37. Distance HSR moyenne: 26.35. Moyenne mobile fatigue (7 j) la plus récente: 0.80."
+  },
+  {
+    "doc_id": "player:600",
+    "player_id": 600,
+    "days": 90,
+    "text": "Player 600. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.75 stress=0.0 fatigue_rolling_7=1.8025793650793653 player_load_total=236.575 player_load_total_rolling_7=246.15811224489804 hsr_distance=461.80999999999995 hsr_distance_rolling_7=481.4293877551021. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 175.63. Distance HSR moyenne: 79.34. Moyenne mobile fatigue (7 j) la plus récente: 1.57.",
+    "metrics": {
+      "fatigue": 1.75,
+      "fatigue_rolling_7": 1.8025793650793653,
+      "hsr_distance": 461.80999999999995,
+      "hsr_distance_rolling_7": 481.4293877551021,
+      "player_load_total": 236.575,
+      "player_load_total_rolling_7": 246.15811224489804,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 175.63. Distance HSR moyenne: 79.34. Moyenne mobile fatigue (7 j) la plus récente: 1.57."
+  },
+  {
+    "doc_id": "player:601",
+    "player_id": 601,
+    "days": 90,
+    "text": "Player 601. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.0 stress=0.0 fatigue_rolling_7=0.0 player_load_total=89.9 player_load_total_rolling_7=120.10089285714287 hsr_distance=84.84124999999999 hsr_distance_rolling_7=59.895357142857144. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 171.43. Distance HSR moyenne: 43.36. Moyenne mobile fatigue (7 j) la plus récente: 0.00.",
+    "metrics": {
+      "fatigue": 0.0,
+      "fatigue_rolling_7": 0.0,
+      "hsr_distance": 84.84124999999999,
+      "hsr_distance_rolling_7": 59.895357142857144,
+      "player_load_total": 89.9,
+      "player_load_total_rolling_7": 120.10089285714287,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 171.43. Distance HSR moyenne: 43.36. Moyenne mobile fatigue (7 j) la plus récente: 0.00."
+  },
+  {
+    "doc_id": "player:602",
+    "player_id": 602,
+    "days": 90,
+    "text": "Player 602. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.0 stress=0.0 fatigue_rolling_7=0.0 player_load_total=166.6922222222222 player_load_total_rolling_7=179.13619047619048 hsr_distance=142.97222222222223 hsr_distance_rolling_7=121.39841269841268. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 263.49. Distance HSR moyenne: 194.74. Moyenne mobile fatigue (7 j) la plus récente: 0.00.",
+    "metrics": {
+      "fatigue": 0.0,
+      "fatigue_rolling_7": 0.0,
+      "hsr_distance": 142.97222222222223,
+      "hsr_distance_rolling_7": 121.39841269841268,
+      "player_load_total": 166.6922222222222,
+      "player_load_total_rolling_7": 179.13619047619048,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 263.49. Distance HSR moyenne: 194.74. Moyenne mobile fatigue (7 j) la plus récente: 0.00."
+  },
+  {
+    "doc_id": "player:603",
+    "player_id": 603,
+    "days": 90,
+    "text": "Player 603. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.0 stress=0.4 fatigue_rolling_7=1.0076190476190476 player_load_total=126.48772727272727 player_load_total_rolling_7=149.84753246753246 hsr_distance=118.19045454545457 hsr_distance_rolling_7=104.42519480519478. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.71/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 207.37. Distance HSR moyenne: 141.02. Moyenne mobile fatigue (7 j) la plus récente: 0.71.",
+    "metrics": {
+      "fatigue": 1.0,
+      "fatigue_rolling_7": 1.0076190476190476,
+      "hsr_distance": 118.19045454545457,
+      "hsr_distance_rolling_7": 104.42519480519478,
+      "player_load_total": 126.48772727272727,
+      "player_load_total_rolling_7": 149.84753246753246,
+      "stress": 0.4
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.71/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 207.37. Distance HSR moyenne: 141.02. Moyenne mobile fatigue (7 j) la plus récente: 0.71."
+  },
+  {
+    "doc_id": "player:604",
+    "player_id": 604,
+    "days": 90,
+    "text": "Player 604. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.2 stress=0.3333333333333333 fatigue_rolling_7=1.2790476190476192 player_load_total=146.898 player_load_total_rolling_7=116.14742857142855 hsr_distance=128.698 hsr_distance_rolling_7=98.71. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.29/10. Charge GPS moyenne (player load): 62.88. Distance HSR moyenne: 4.17. Moyenne mobile fatigue (7 j) la plus récente: 1.14.",
+    "metrics": {
+      "fatigue": 1.2,
+      "fatigue_rolling_7": 1.2790476190476192,
+      "hsr_distance": 128.698,
+      "hsr_distance_rolling_7": 98.71,
+      "player_load_total": 146.898,
+      "player_load_total_rolling_7": 116.14742857142855,
+      "stress": 0.3333333333333333
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.29/10. Charge GPS moyenne (player load): 62.88. Distance HSR moyenne: 4.17. Moyenne mobile fatigue (7 j) la plus récente: 1.14."
+  },
+  {
+    "doc_id": "player:605",
+    "player_id": 605,
+    "days": 90,
+    "text": "Player 605. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.6470588235294118 stress=0.0 fatigue_rolling_7=0.5718487394957982 player_load_total=149.1068 player_load_total_rolling_7=160.97474285714287 hsr_distance=172.18199999999996 hsr_distance_rolling_7=174.21742857142857. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.86/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 229.51. Distance HSR moyenne: 246.58. Moyenne mobile fatigue (7 j) la plus récente: 0.86.",
+    "metrics": {
+      "fatigue": 0.6470588235294118,
+      "fatigue_rolling_7": 0.5718487394957982,
+      "hsr_distance": 172.18199999999996,
+      "hsr_distance_rolling_7": 174.21742857142857,
+      "player_load_total": 149.1068,
+      "player_load_total_rolling_7": 160.97474285714287,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.86/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 229.51. Distance HSR moyenne: 246.58. Moyenne mobile fatigue (7 j) la plus récente: 0.86."
+  },
+  {
+    "doc_id": "player:606",
+    "player_id": 606,
+    "days": 90,
+    "text": "Player 606. Period: 90 days. Last metric date: 2026-03-04. fatigue=0.5714285714285714 stress=0.14285714285714285 fatigue_rolling_7=0.5673469387755102 player_load_total=None player_load_total_rolling_7=None hsr_distance=None hsr_distance_rolling_7=None. Report: Période 7d jusqu'au 2026-03-04: fatigue moyenne 0.57/10, stress moyen 0.14/10. Moyenne mobile fatigue (7 j) la plus récente: 0.57.",
+    "metrics": {
+      "fatigue": 0.5714285714285714,
+      "fatigue_rolling_7": 0.5673469387755102,
+      "stress": 0.14285714285714285
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-04: fatigue moyenne 0.57/10, stress moyen 0.14/10. Moyenne mobile fatigue (7 j) la plus récente: 0.57."
+  },
+  {
+    "doc_id": "player:608",
+    "player_id": 608,
+    "days": 90,
+    "text": "Player 608. Period: 90 days. Last metric date: 2026-03-01. fatigue=0.0 stress=0.0 fatigue_rolling_7=0.0 player_load_total=None player_load_total_rolling_7=None hsr_distance=None hsr_distance_rolling_7=None. Report: Période 7d jusqu'au 2026-03-01: fatigue moyenne 0.00/10, stress moyen 0.00/10. Moyenne mobile fatigue (7 j) la plus récente: 0.00.",
+    "metrics": {
+      "fatigue": 0.0,
+      "fatigue_rolling_7": 0.0,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-01: fatigue moyenne 0.00/10, stress moyen 0.00/10. Moyenne mobile fatigue (7 j) la plus récente: 0.00."
+  },
+  {
+    "doc_id": "player:609",
+    "player_id": 609,
+    "days": 90,
+    "text": "Player 609. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.0666666666666667 stress=0.0 fatigue_rolling_7=0.8763492063492062 player_load_total=125.84521739130435 player_load_total_rolling_7=126.64759006211179 hsr_distance=117.84652173913042 hsr_distance_rolling_7=93.61116770186335. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 92.67. Distance HSR moyenne: 54.10. Moyenne mobile fatigue (7 j) la plus récente: 1.29.",
+    "metrics": {
+      "fatigue": 1.0666666666666667,
+      "fatigue_rolling_7": 0.8763492063492062,
+      "hsr_distance": 117.84652173913042,
+      "hsr_distance_rolling_7": 93.61116770186335,
+      "player_load_total": 125.84521739130435,
+      "player_load_total_rolling_7": 126.64759006211179,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 92.67. Distance HSR moyenne: 54.10. Moyenne mobile fatigue (7 j) la plus récente: 1.29."
+  },
+  {
+    "doc_id": "player:610",
+    "player_id": 610,
+    "days": 90,
+    "text": "Player 610. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.1875 stress=0.0 fatigue_rolling_7=1.163541666666667 player_load_total=134.14399999999998 player_load_total_rolling_7=111.64171428571429 hsr_distance=162.1415 hsr_distance_rolling_7=117.85307142857141. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 109.65. Distance HSR moyenne: 122.10. Moyenne mobile fatigue (7 j) la plus récente: 1.14.",
+    "metrics": {
+      "fatigue": 1.1875,
+      "fatigue_rolling_7": 1.163541666666667,
+      "hsr_distance": 162.1415,
+      "hsr_distance_rolling_7": 117.85307142857141,
+      "player_load_total": 134.14399999999998,
+      "player_load_total_rolling_7": 111.64171428571429,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 109.65. Distance HSR moyenne: 122.10. Moyenne mobile fatigue (7 j) la plus récente: 1.14."
+  },
+  {
+    "doc_id": "player:612",
+    "player_id": 612,
+    "days": 90,
+    "text": "Player 612. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.0 stress=1.7142857142857142 fatigue_rolling_7=1.0 player_load_total=160.55375 player_load_total_rolling_7=144.36382936507934 hsr_distance=165.36708333333334 hsr_distance_rolling_7=133.19445436507937. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 2.00/10. Charge GPS moyenne (player load): 110.31. Distance HSR moyenne: 87.93. Moyenne mobile fatigue (7 j) la plus récente: 1.00.",
+    "metrics": {
+      "fatigue": 1.0,
+      "fatigue_rolling_7": 1.0,
+      "hsr_distance": 165.36708333333334,
+      "hsr_distance_rolling_7": 133.19445436507937,
+      "player_load_total": 160.55375,
+      "player_load_total_rolling_7": 144.36382936507934,
+      "stress": 1.7142857142857142
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 2.00/10. Charge GPS moyenne (player load): 110.31. Distance HSR moyenne: 87.93. Moyenne mobile fatigue (7 j) la plus récente: 1.00."
+  },
+  {
+    "doc_id": "player:613",
+    "player_id": 613,
+    "days": 90,
+    "text": "Player 613. Period: 90 days. Last metric date: 2026-03-25. fatigue=0.7272727272727273 stress=0.45454545454545453 fatigue_rolling_7=0.7274891774891774 player_load_total=158.14526315789473 player_load_total_rolling_7=156.2166917293233 hsr_distance=207.14736842105262 hsr_distance_rolling_7=180.44595488721802. Report: Période 7d jusqu'au 2026-03-23: fatigue moyenne 0.71/10, stress moyen 0.29/10. Charge GPS moyenne (player load): 138.83. Distance HSR moyenne: 137.42. Moyenne mobile fatigue (7 j) la plus récente: 0.71.",
+    "metrics": {
+      "fatigue": 0.7272727272727273,
+      "fatigue_rolling_7": 0.7274891774891774,
+      "hsr_distance": 207.14736842105262,
+      "hsr_distance_rolling_7": 180.44595488721802,
+      "player_load_total": 158.14526315789473,
+      "player_load_total_rolling_7": 156.2166917293233,
+      "stress": 0.45454545454545453
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-23: fatigue moyenne 0.71/10, stress moyen 0.29/10. Charge GPS moyenne (player load): 138.83. Distance HSR moyenne: 137.42. Moyenne mobile fatigue (7 j) la plus récente: 0.71."
+  },
+  {
+    "doc_id": "player:615",
+    "player_id": 615,
+    "days": 90,
+    "text": "Player 615. Period: 90 days. Last metric date: 2026-03-25. fatigue=0.8461538461538461 stress=0.46153846153846156 fatigue_rolling_7=0.8142857142857143 player_load_total=None player_load_total_rolling_7=None hsr_distance=None hsr_distance_rolling_7=None. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.86/10, stress moyen 0.29/10. Moyenne mobile fatigue (7 j) la plus récente: 0.86.",
+    "metrics": {
+      "fatigue": 0.8461538461538461,
+      "fatigue_rolling_7": 0.8142857142857143,
+      "stress": 0.46153846153846156
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.86/10, stress moyen 0.29/10. Moyenne mobile fatigue (7 j) la plus récente: 0.86."
+  },
+  {
+    "doc_id": "player:617",
+    "player_id": 617,
+    "days": 90,
+    "text": "Player 617. Period: 90 days. Last metric date: 2026-03-23. fatigue=0.8888888888888888 stress=1.6666666666666667 fatigue_rolling_7=0.807142857142857 player_load_total=187.81363636363633 player_load_total_rolling_7=156.03194805194804 hsr_distance=191.29090909090908 hsr_distance_rolling_7=130.47776623376623. Report: Période 7d jusqu'au 2026-03-23: fatigue moyenne 1.00/10, stress moyen 2.00/10. Charge GPS moyenne (player load): 165.77. Distance HSR moyenne: 131.00. Moyenne mobile fatigue (7 j) la plus récente: 1.00.",
+    "metrics": {
+      "fatigue": 0.8888888888888888,
+      "fatigue_rolling_7": 0.807142857142857,
+      "hsr_distance": 191.29090909090908,
+      "hsr_distance_rolling_7": 130.47776623376623,
+      "player_load_total": 187.81363636363633,
+      "player_load_total_rolling_7": 156.03194805194804,
+      "stress": 1.6666666666666667
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-23: fatigue moyenne 1.00/10, stress moyen 2.00/10. Charge GPS moyenne (player load): 165.77. Distance HSR moyenne: 131.00. Moyenne mobile fatigue (7 j) la plus récente: 1.00."
+  },
+  {
+    "doc_id": "player:618",
+    "player_id": 618,
+    "days": 90,
+    "text": "Player 618. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.2 stress=1.5 fatigue_rolling_7=1.0366666666666666 player_load_total=129.38090909090909 player_load_total_rolling_7=140.12335064935067 hsr_distance=129.92545454545456 hsr_distance_rolling_7=103.78805194805192. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.29/10, stress moyen 1.43/10. Charge GPS moyenne (player load): 187.93. Distance HSR moyenne: 157.36. Moyenne mobile fatigue (7 j) la plus récente: 1.29.",
+    "metrics": {
+      "fatigue": 1.2,
+      "fatigue_rolling_7": 1.0366666666666666,
+      "hsr_distance": 129.92545454545456,
+      "hsr_distance_rolling_7": 103.78805194805192,
+      "player_load_total": 129.38090909090909,
+      "player_load_total_rolling_7": 140.12335064935067,
+      "stress": 1.5
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.29/10, stress moyen 1.43/10. Charge GPS moyenne (player load): 187.93. Distance HSR moyenne: 157.36. Moyenne mobile fatigue (7 j) la plus récente: 1.29."
+  },
+  {
+    "doc_id": "player:619",
+    "player_id": 619,
+    "days": 90,
+    "text": "Player 619. Period: 90 days. Last metric date: 2026-03-25. fatigue=0.26666666666666666 stress=0.0 fatigue_rolling_7=0.4463492063492065 player_load_total=158.50894736842102 player_load_total_rolling_7=157.09615037593983 hsr_distance=169.9852631578947 hsr_distance_rolling_7=139.8526917293233. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.14/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 141.13. Distance HSR moyenne: 131.38. Moyenne mobile fatigue (7 j) la plus récente: 0.14.",
+    "metrics": {
+      "fatigue": 0.26666666666666666,
+      "fatigue_rolling_7": 0.4463492063492065,
+      "hsr_distance": 169.9852631578947,
+      "hsr_distance_rolling_7": 139.8526917293233,
+      "player_load_total": 158.50894736842102,
+      "player_load_total_rolling_7": 157.09615037593983,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.14/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 141.13. Distance HSR moyenne: 131.38. Moyenne mobile fatigue (7 j) la plus récente: 0.14."
+  },
+  {
+    "doc_id": "player:620",
+    "player_id": 620,
+    "days": 90,
+    "text": "Player 620. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.0 stress=0.07142857142857142 fatigue_rolling_7=0.9312925170068027 player_load_total=149.25833333333335 player_load_total_rolling_7=145.44219047619046 hsr_distance=156.25541666666666 hsr_distance_rolling_7=121.31488095238096. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 111.64. Distance HSR moyenne: 63.64. Moyenne mobile fatigue (7 j) la plus récente: 1.29.",
+    "metrics": {
+      "fatigue": 1.0,
+      "fatigue_rolling_7": 0.9312925170068027,
+      "hsr_distance": 156.25541666666666,
+      "hsr_distance_rolling_7": 121.31488095238096,
+      "player_load_total": 149.25833333333335,
+      "player_load_total_rolling_7": 145.44219047619046,
+      "stress": 0.07142857142857142
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 111.64. Distance HSR moyenne: 63.64. Moyenne mobile fatigue (7 j) la plus récente: 1.29."
+  },
+  {
+    "doc_id": "player:624",
+    "player_id": 624,
+    "days": 90,
+    "text": "Player 624. Period: 90 days. Last metric date: 2026-02-09. fatigue=None stress=None fatigue_rolling_7=None player_load_total=267.56 player_load_total_rolling_7=267.56 hsr_distance=0.0 hsr_distance_rolling_7=0.0. Report: Aucun rapport généré.",
+    "metrics": {
+      "hsr_distance": 0.0,
+      "hsr_distance_rolling_7": 0.0,
+      "player_load_total": 267.56,
+      "player_load_total_rolling_7": 267.56
+    },
+    "report_summary": "Aucun rapport généré."
+  },
+  {
+    "doc_id": "player:626",
+    "player_id": 626,
+    "days": 90,
+    "text": "Player 626. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.2941176470588236 stress=0.8823529411764706 fatigue_rolling_7=1.1932773109243695 player_load_total=126.34 player_load_total_rolling_7=147.8836883116883 hsr_distance=152.1722727272727 hsr_distance_rolling_7=155.62638961038965. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 0.71/10. Charge GPS moyenne (player load): 192.64. Distance HSR moyenne: 255.46. Moyenne mobile fatigue (7 j) la plus récente: 1.29.",
+    "metrics": {
+      "fatigue": 1.2941176470588236,
+      "fatigue_rolling_7": 1.1932773109243695,
+      "hsr_distance": 152.1722727272727,
+      "hsr_distance_rolling_7": 155.62638961038965,
+      "player_load_total": 126.34,
+      "player_load_total_rolling_7": 147.8836883116883,
+      "stress": 0.8823529411764706
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 0.71/10. Charge GPS moyenne (player load): 192.64. Distance HSR moyenne: 255.46. Moyenne mobile fatigue (7 j) la plus récente: 1.29."
+  },
+  {
+    "doc_id": "player:627",
+    "player_id": 627,
+    "days": 90,
+    "text": "Player 627. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.5 stress=1.0 fatigue_rolling_7=0.36887755102040815 player_load_total=115.58086956521738 player_load_total_rolling_7=121.32500621118011 hsr_distance=114.89347826086953 hsr_distance_rolling_7=108.37852173913043. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.86/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 108.98. Distance HSR moyenne: 104.15. Moyenne mobile fatigue (7 j) la plus récente: 0.86.",
+    "metrics": {
+      "fatigue": 0.5,
+      "fatigue_rolling_7": 0.36887755102040815,
+      "hsr_distance": 114.89347826086953,
+      "hsr_distance_rolling_7": 108.37852173913043,
+      "player_load_total": 115.58086956521738,
+      "player_load_total_rolling_7": 121.32500621118011,
+      "stress": 1.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.86/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 108.98. Distance HSR moyenne: 104.15. Moyenne mobile fatigue (7 j) la plus récente: 0.86."
+  },
+  {
+    "doc_id": "player:628",
+    "player_id": 628,
+    "days": 90,
+    "text": "Player 628. Period: 90 days. Last metric date: 2026-03-25. fatigue=0.3076923076923077 stress=0.3076923076923077 fatigue_rolling_7=0.3805860805860806 player_load_total=171.08849999999998 player_load_total_rolling_7=151.70235714285712 hsr_distance=132.67350000000002 hsr_distance_rolling_7=83.05405714285715. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.14/10, stress moyen 0.29/10. Charge GPS moyenne (player load): 176.88. Distance HSR moyenne: 47.87. Moyenne mobile fatigue (7 j) la plus récente: 0.14.",
+    "metrics": {
+      "fatigue": 0.3076923076923077,
+      "fatigue_rolling_7": 0.3805860805860806,
+      "hsr_distance": 132.67350000000002,
+      "hsr_distance_rolling_7": 83.05405714285715,
+      "player_load_total": 171.08849999999998,
+      "player_load_total_rolling_7": 151.70235714285712,
+      "stress": 0.3076923076923077
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 0.14/10, stress moyen 0.29/10. Charge GPS moyenne (player load): 176.88. Distance HSR moyenne: 47.87. Moyenne mobile fatigue (7 j) la plus récente: 0.14."
+  },
+  {
+    "doc_id": "player:630",
+    "player_id": 630,
+    "days": 90,
+    "text": "Player 630. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.6666666666666666 stress=0.9166666666666666 fatigue_rolling_7=0.6220238095238095 player_load_total=201.86437499999997 player_load_total_rolling_7=160.47787202380954 hsr_distance=226.83937500000002 hsr_distance_rolling_7=141.50220238095238. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.43/10, stress moyen 0.86/10. Charge GPS moyenne (player load): 116.24. Distance HSR moyenne: 108.26. Moyenne mobile fatigue (7 j) la plus récente: 0.43.",
+    "metrics": {
+      "fatigue": 0.6666666666666666,
+      "fatigue_rolling_7": 0.6220238095238095,
+      "hsr_distance": 226.83937500000002,
+      "hsr_distance_rolling_7": 141.50220238095238,
+      "player_load_total": 201.86437499999997,
+      "player_load_total_rolling_7": 160.47787202380954,
+      "stress": 0.9166666666666666
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.43/10, stress moyen 0.86/10. Charge GPS moyenne (player load): 116.24. Distance HSR moyenne: 108.26. Moyenne mobile fatigue (7 j) la plus récente: 0.43."
+  },
+  {
+    "doc_id": "player:631",
+    "player_id": 631,
+    "days": 90,
+    "text": "Player 631. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.0 stress=1.0 fatigue_rolling_7=0.9574829931972788 player_load_total=151.07166666666666 player_load_total_rolling_7=140.05553968253966 hsr_distance=151.70055555555552 hsr_distance_rolling_7=133.15373015873016. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.86/10. Charge GPS moyenne (player load): 90.74. Distance HSR moyenne: 74.95. Moyenne mobile fatigue (7 j) la plus récente: 1.14.",
+    "metrics": {
+      "fatigue": 1.0,
+      "fatigue_rolling_7": 0.9574829931972788,
+      "hsr_distance": 151.70055555555552,
+      "hsr_distance_rolling_7": 133.15373015873016,
+      "player_load_total": 151.07166666666666,
+      "player_load_total_rolling_7": 140.05553968253966,
+      "stress": 1.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.14/10, stress moyen 0.86/10. Charge GPS moyenne (player load): 90.74. Distance HSR moyenne: 74.95. Moyenne mobile fatigue (7 j) la plus récente: 1.14."
+  },
+  {
+    "doc_id": "player:632",
+    "player_id": 632,
+    "days": 90,
+    "text": "Player 632. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.2352941176470589 stress=0.0 fatigue_rolling_7=1.288375350140056 player_load_total=125.42318181818179 player_load_total_rolling_7=129.85275324675328 hsr_distance=141.05363636363634 hsr_distance_rolling_7=122.57307792207793. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 123.89. Distance HSR moyenne: 103.48. Moyenne mobile fatigue (7 j) la plus récente: 1.00.",
+    "metrics": {
+      "fatigue": 1.2352941176470589,
+      "fatigue_rolling_7": 1.288375350140056,
+      "hsr_distance": 141.05363636363634,
+      "hsr_distance_rolling_7": 122.57307792207793,
+      "player_load_total": 125.42318181818179,
+      "player_load_total_rolling_7": 129.85275324675328,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 123.89. Distance HSR moyenne: 103.48. Moyenne mobile fatigue (7 j) la plus récente: 1.00."
+  },
+  {
+    "doc_id": "player:633",
+    "player_id": 633,
+    "days": 90,
+    "text": "Player 633. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.2857142857142857 stress=0.0 fatigue_rolling_7=0.28911564625850333 player_load_total=120.48499999999999 player_load_total_rolling_7=116.53374285714285 hsr_distance=118.30649999999999 hsr_distance_rolling_7=88.54442857142858. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 60.93. Distance HSR moyenne: 30.76. Moyenne mobile fatigue (7 j) la plus récente: 0.00.",
+    "metrics": {
+      "fatigue": 0.2857142857142857,
+      "fatigue_rolling_7": 0.28911564625850333,
+      "hsr_distance": 118.30649999999999,
+      "hsr_distance_rolling_7": 88.54442857142858,
+      "player_load_total": 120.48499999999999,
+      "player_load_total_rolling_7": 116.53374285714285,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 0.00/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 60.93. Distance HSR moyenne: 30.76. Moyenne mobile fatigue (7 j) la plus récente: 0.00."
+  },
+  {
+    "doc_id": "player:635",
+    "player_id": 635,
+    "days": 90,
+    "text": "Player 635. Period: 90 days. Last metric date: 2026-03-29. fatigue=2.0 stress=2.25 fatigue_rolling_7=1.4583333333333333 player_load_total=170.46727272727273 player_load_total_rolling_7=152.2809090909091 hsr_distance=228.8590909090909 hsr_distance_rolling_7=176.3325324675325. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 2.00/10, stress moyen 2.25/10. Charge GPS moyenne (player load): 109.25. Distance HSR moyenne: 93.93. Moyenne mobile fatigue (7 j) la plus récente: 2.00.",
+    "metrics": {
+      "fatigue": 2.0,
+      "fatigue_rolling_7": 1.4583333333333333,
+      "hsr_distance": 228.8590909090909,
+      "hsr_distance_rolling_7": 176.3325324675325,
+      "player_load_total": 170.46727272727273,
+      "player_load_total_rolling_7": 152.2809090909091,
+      "stress": 2.25
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 2.00/10, stress moyen 2.25/10. Charge GPS moyenne (player load): 109.25. Distance HSR moyenne: 93.93. Moyenne mobile fatigue (7 j) la plus récente: 2.00."
+  },
+  {
+    "doc_id": "player:637",
+    "player_id": 637,
+    "days": 90,
+    "text": "Player 637. Period: 90 days. Last metric date: 2026-03-25. fatigue=1.25 stress=0.0 fatigue_rolling_7=2.104166666666667 player_load_total=92.73599999999999 player_load_total_rolling_7=100.81514285714286 hsr_distance=66.494 hsr_distance_rolling_7=42.67285714285714. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.25/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 143.86. Distance HSR moyenne: 72.39. Moyenne mobile fatigue (7 j) la plus récente: 1.25.",
+    "metrics": {
+      "fatigue": 1.25,
+      "fatigue_rolling_7": 2.104166666666667,
+      "hsr_distance": 66.494,
+      "hsr_distance_rolling_7": 42.67285714285714,
+      "player_load_total": 92.73599999999999,
+      "player_load_total_rolling_7": 100.81514285714286,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.25/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 143.86. Distance HSR moyenne: 72.39. Moyenne mobile fatigue (7 j) la plus récente: 1.25."
+  },
+  {
+    "doc_id": "player:638",
+    "player_id": 638,
+    "days": 90,
+    "text": "Player 638. Period: 90 days. Last metric date: 2026-03-23. fatigue=1.0 stress=0.6666666666666666 fatigue_rolling_7=1.0 player_load_total=92.13 player_load_total_rolling_7=113.17857142857143 hsr_distance=77.65 hsr_distance_rolling_7=52.845714285714294. Report: Période 7d jusqu'au 2026-03-23: fatigue moyenne 1.00/10, stress moyen 0.57/10. Charge GPS moyenne (player load): 86.77. Distance HSR moyenne: 37.14. Moyenne mobile fatigue (7 j) la plus récente: 1.00.",
+    "metrics": {
+      "fatigue": 1.0,
+      "fatigue_rolling_7": 1.0,
+      "hsr_distance": 77.65,
+      "hsr_distance_rolling_7": 52.845714285714294,
+      "player_load_total": 92.13,
+      "player_load_total_rolling_7": 113.17857142857143,
+      "stress": 0.6666666666666666
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-23: fatigue moyenne 1.00/10, stress moyen 0.57/10. Charge GPS moyenne (player load): 86.77. Distance HSR moyenne: 37.14. Moyenne mobile fatigue (7 j) la plus récente: 1.00."
+  },
+  {
+    "doc_id": "player:639",
+    "player_id": 639,
+    "days": 90,
+    "text": "Player 639. Period: 90 days. Last metric date: 2026-03-25. fatigue=1.3 stress=1.1 fatigue_rolling_7=1.2804761904761905 player_load_total=184.9575 player_load_total_rolling_7=146.10309523809522 hsr_distance=144.79416666666665 hsr_distance_rolling_7=97.47083333333332. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.43/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 148.12. Distance HSR moyenne: 62.27. Moyenne mobile fatigue (7 j) la plus récente: 1.43.",
+    "metrics": {
+      "fatigue": 1.3,
+      "fatigue_rolling_7": 1.2804761904761905,
+      "hsr_distance": 144.79416666666665,
+      "hsr_distance_rolling_7": 97.47083333333332,
+      "player_load_total": 184.9575,
+      "player_load_total_rolling_7": 146.10309523809522,
+      "stress": 1.1
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.43/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 148.12. Distance HSR moyenne: 62.27. Moyenne mobile fatigue (7 j) la plus récente: 1.43."
+  },
+  {
+    "doc_id": "player:642",
+    "player_id": 642,
+    "days": 90,
+    "text": "Player 642. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.3333333333333333 stress=1.5833333333333333 fatigue_rolling_7=1.142857142857143 player_load_total=225.32049999999998 player_load_total_rolling_7=239.5850476190476 hsr_distance=413.6175 hsr_distance_rolling_7=414.4432619047619. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 1.57/10. Charge GPS moyenne (player load): 194.24. Distance HSR moyenne: 123.00. Moyenne mobile fatigue (7 j) la plus récente: 1.57.",
+    "metrics": {
+      "fatigue": 1.3333333333333333,
+      "fatigue_rolling_7": 1.142857142857143,
+      "hsr_distance": 413.6175,
+      "hsr_distance_rolling_7": 414.4432619047619,
+      "player_load_total": 225.32049999999998,
+      "player_load_total_rolling_7": 239.5850476190476,
+      "stress": 1.5833333333333333
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 1.57/10. Charge GPS moyenne (player load): 194.24. Distance HSR moyenne: 123.00. Moyenne mobile fatigue (7 j) la plus récente: 1.57."
+  },
+  {
+    "doc_id": "player:643",
+    "player_id": 643,
+    "days": 90,
+    "text": "Player 643. Period: 90 days. Last metric date: 2026-03-25. fatigue=0.9230769230769231 stress=0.07692307692307693 fatigue_rolling_7=0.8483516483516482 player_load_total=None player_load_total_rolling_7=None hsr_distance=None hsr_distance_rolling_7=None. Report: Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.14/10, stress moyen 0.14/10. Moyenne mobile fatigue (7 j) la plus récente: 1.14.",
+    "metrics": {
+      "fatigue": 0.9230769230769231,
+      "fatigue_rolling_7": 0.8483516483516482,
+      "stress": 0.07692307692307693
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-25: fatigue moyenne 1.14/10, stress moyen 0.14/10. Moyenne mobile fatigue (7 j) la plus récente: 1.14."
+  },
+  {
+    "doc_id": "player:644",
+    "player_id": 644,
+    "days": 90,
+    "text": "Player 644. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.5 stress=0.0 fatigue_rolling_7=1.449489795918367 player_load_total=150.31400000000002 player_load_total_rolling_7=152.70257142857142 hsr_distance=162.8032 hsr_distance_rolling_7=153.59285714285716. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 226.48. Distance HSR moyenne: 195.79. Moyenne mobile fatigue (7 j) la plus récente: 1.43.",
+    "metrics": {
+      "fatigue": 1.5,
+      "fatigue_rolling_7": 1.449489795918367,
+      "hsr_distance": 162.8032,
+      "hsr_distance_rolling_7": 153.59285714285716,
+      "player_load_total": 150.31400000000002,
+      "player_load_total_rolling_7": 152.70257142857142,
+      "stress": 0.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.43/10, stress moyen 0.00/10. Charge GPS moyenne (player load): 226.48. Distance HSR moyenne: 195.79. Moyenne mobile fatigue (7 j) la plus récente: 1.43."
+  },
+  {
+    "doc_id": "player:645",
+    "player_id": 645,
+    "days": 90,
+    "text": "Player 645. Period: 90 days. Last metric date: 2026-03-29. fatigue=0.9375 stress=0.8125 fatigue_rolling_7=0.8141369047619048 player_load_total=124.67791666666666 player_load_total_rolling_7=108.90859523809523 hsr_distance=74.99416666666667 hsr_distance_rolling_7=54.002619047619056. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 1.29/10. Charge GPS moyenne (player load): 95.72. Distance HSR moyenne: 32.61. Moyenne mobile fatigue (7 j) la plus récente: 1.29.",
+    "metrics": {
+      "fatigue": 0.9375,
+      "fatigue_rolling_7": 0.8141369047619048,
+      "hsr_distance": 74.99416666666667,
+      "hsr_distance_rolling_7": 54.002619047619056,
+      "player_load_total": 124.67791666666666,
+      "player_load_total_rolling_7": 108.90859523809523,
+      "stress": 0.8125
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.29/10, stress moyen 1.29/10. Charge GPS moyenne (player load): 95.72. Distance HSR moyenne: 32.61. Moyenne mobile fatigue (7 j) la plus récente: 1.29."
+  },
+  {
+    "doc_id": "player:646",
+    "player_id": 646,
+    "days": 90,
+    "text": "Player 646. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.5833333333333333 stress=1.3333333333333333 fatigue_rolling_7=1.3882936507936507 player_load_total=145.73434782608697 player_load_total_rolling_7=118.39802484472051 hsr_distance=129.76956521739132 hsr_distance_rolling_7=80.798049689441. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 1.57/10. Charge GPS moyenne (player load): 98.04. Distance HSR moyenne: 80.66. Moyenne mobile fatigue (7 j) la plus récente: 1.57.",
+    "metrics": {
+      "fatigue": 1.5833333333333333,
+      "fatigue_rolling_7": 1.3882936507936507,
+      "hsr_distance": 129.76956521739132,
+      "hsr_distance_rolling_7": 80.798049689441,
+      "player_load_total": 145.73434782608697,
+      "player_load_total_rolling_7": 118.39802484472051,
+      "stress": 1.3333333333333333
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.57/10, stress moyen 1.57/10. Charge GPS moyenne (player load): 98.04. Distance HSR moyenne: 80.66. Moyenne mobile fatigue (7 j) la plus récente: 1.57."
+  },
+  {
+    "doc_id": "player:647",
+    "player_id": 647,
+    "days": 90,
+    "text": "Player 647. Period: 90 days. Last metric date: 2026-03-29. fatigue=1.0 stress=1.0 fatigue_rolling_7=1.0 player_load_total=23.3 player_load_total_rolling_7=23.3 hsr_distance=0.0 hsr_distance_rolling_7=0.0. Report: Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 23.30. Distance HSR moyenne: 0.00. Moyenne mobile fatigue (7 j) la plus récente: 1.00.",
+    "metrics": {
+      "fatigue": 1.0,
+      "fatigue_rolling_7": 1.0,
+      "hsr_distance": 0.0,
+      "hsr_distance_rolling_7": 0.0,
+      "player_load_total": 23.3,
+      "player_load_total_rolling_7": 23.3,
+      "stress": 1.0
+    },
+    "report_summary": "Période 7d jusqu'au 2026-03-29: fatigue moyenne 1.00/10, stress moyen 1.00/10. Charge GPS moyenne (player load): 23.30. Distance HSR moyenne: 0.00. Moyenne mobile fatigue (7 j) la plus récente: 1.00."
+  }
+]

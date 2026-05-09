@@ -1,0 +1,4 @@
+case_id,ok,status_code,latency_ms,prompt_tokens,completion_tokens,total_tokens,tokens_per_second,error
+general_hello,True,200,19.985374994575977,7,2,9,100.07317853894656,
+code_python,True,200,11.875333002535626,9,2,11,168.41632984716802,
+reasoning_steps,True,200,10.666832997230813,19,2,21,187.49707626614332,

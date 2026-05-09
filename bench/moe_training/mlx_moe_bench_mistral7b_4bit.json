@@ -1,0 +1,17 @@
+{
+  "model_id": "mlx-community/Mistral-7B-Instruct-v0.3-4bit",
+  "model_summary": {
+    "model_type": "mistral"
+  },
+  "prompt_len_chars": 63,
+  "max_tokens": 32,
+  "output_len_chars": 112,
+  "load_wall_s": 5.4468,
+  "generate_wall_s": 1.4631,
+  "tokens_per_s": 21.8716,
+  "peak_memory_bytes_after_load": 4077395976,
+  "peak_memory_bytes_generate_phase": 4210794816,
+  "active_memory_bytes_end": 4077395976,
+  "peak_memory_gib_after_load": 3.797,
+  "peak_memory_gib_generate_phase": 3.922
+}

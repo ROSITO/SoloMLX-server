@@ -1,0 +1,32 @@
+{
+  "model_id": "bench/moe_conversion/mistral7b_full_mixtral_moe_e2_v2_mlx_4bit",
+  "model_summary": {
+    "model_type": "mixtral",
+    "num_local_experts": 1,
+    "num_experts_per_tok": 1,
+    "expert_activation_ratio": 1.0
+  },
+  "prompt_len_chars": 63,
+  "max_tokens": 32,
+  "output_len_chars": 105,
+  "load_wall_s": 10.6448,
+  "generate_wall_s": 4.9576,
+  "tokens_per_s": 6.4547,
+  "peak_memory_bytes_after_load": 7248437256,
+  "peak_memory_bytes_generate_phase": 7617914132,
+  "active_memory_bytes_end": 4077395976,
+  "peak_memory_gib_after_load": 6.751,
+  "peak_memory_gib_generate_phase": 7.095,
+  "active_memory_gib_end": 3.797,
+  "peak_memory_gib_worst": 7.095,
+  "moe_offload": {
+    "keep_experts": 1,
+    "strategy": "l2",
+    "layers_touched": 32,
+    "experts_before": 2,
+    "experts_after": 1,
+    "single_expert_fastpath": true
+  },
+  "ram_budget_gib": 16.0,
+  "within_ram_budget": true
+}

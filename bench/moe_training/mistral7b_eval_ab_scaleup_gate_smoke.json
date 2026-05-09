@@ -1,0 +1,91 @@
+{
+  "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+  "eval_strategy": "sequential_dense_then_moe",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0,
+    "offload_unused_experts": true
+  },
+  "adapter_path": "bench/moe_training/mistral7b_moe_scaleup_gate_smoke.pt",
+  "adapter_layers_loaded": 1,
+  "dense": {
+    "avg_loss": 4.59488468170166,
+    "p95_latency_ms": 4790.588417003164
+  },
+  "moe_bridge": {
+    "avg_loss": 4.43416838645935,
+    "p95_latency_ms": 28550.566791003803
+  },
+  "delta": {
+    "avg_loss": -0.16071629524230957,
+    "p95_latency_ms": 23759.97837400064
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 3.108903646469116,
+      "latency_ms": 4790.588417003164,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour calculer le pourcentage d'augmentation, il faut utiliser la formule"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.6410672664642334,
+      "latency_ms": 3508.9283749985043,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\ndef get_sum(a, b):\n    if type(a) != int"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 5.329436779022217,
+      "latency_ms": 3473.9365840214305,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nPour servir un LLM (Large Language Model) sur un Mac avec contrainte memoire stric"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.725915908813477,
+      "latency_ms": 3447.4110000010114,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n1. Risque d'exposition de donn\u00e9es sensibles : Les API locales LLM peuvent"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.169099807739258,
+      "latency_ms": 3431.1434580013156,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. Qualit\u00e9 : La qualit\u00e9 d'un mod\u00e8le de machine learning est mesur\u00e9e par son"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 3.123020648956299,
+      "latency_ms": 28550.566791003803,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour calculer le pourcentage d'augmentation, on utilise la formule suivante"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.6818416118621826,
+      "latency_ms": 4988.453500001924,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\ndef get_sum(lst):\n    if not isinstance(lst, list):\n"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 4.989090442657471,
+      "latency_ms": 5142.846083006589,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nPour servir un LLM sur Mac avec contrainte memoire stricte, une architecture locale peut"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.358334064483643,
+      "latency_ms": 5578.833165985998,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n1. Risque d'injection SQL:\n   - Cause: Utilisation d'une cha"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.018555164337158,
+      "latency_ms": 5732.582625001669,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. Qualite : la precision de l'inference est importante pour que les resultats soient f"
+    }
+  ]
+}

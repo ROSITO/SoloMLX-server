@@ -1,0 +1,32 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "layers_replaced": [
+    2,
+    6,
+    10
+  ],
+  "steps": 20,
+  "loss_start": 13.938383102416992,
+  "final_loss": 11.5224027633667,
+  "loss_delta": -2.415980339050293,
+  "loss_min": 11.03120231628418,
+  "loss_max": 13.938383102416992,
+  "router_entropy_avg": 1.386290591955185,
+  "expert_usage_avg": {
+    "expert_0": 0.24991337954998016,
+    "expert_1": 0.2500735801955064,
+    "expert_2": 0.24977015033364297,
+    "expert_3": 0.2502428933978081
+  },
+  "seconds_total": 7.805793125007767,
+  "seconds_per_step": 0.39028965625038836,
+  "config": {
+    "batch_size": 2,
+    "seq_len": 32,
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 1,
+    "lr": 0.0001,
+    "device": "cpu"
+  }
+}

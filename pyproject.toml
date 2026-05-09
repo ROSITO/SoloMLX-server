@@ -19,9 +19,19 @@ dependencies = [
 dev = [
   "pytest>=8.4.0",
   "httpx>=0.28.0",
+  "PyJWT>=2.8.0",
 ]
 mlx = [
   "mlx-lm>=0.26.0",
+]
+security = [
+  "PyJWT>=2.8.0",
+]
+rd = [
+  "torch>=2.4.0",
+  "transformers>=4.46.0",
+  "safetensors>=0.4.0",
+  "huggingface_hub>=0.30.0",
 ]
 
 [project.scripts]

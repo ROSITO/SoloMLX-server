@@ -1,0 +1,39 @@
+{
+  "stub": {
+    "cases_total": 3.0,
+    "cases_ok": 3.0,
+    "error_rate": 0.0,
+    "latency_p50_ms": 26.196917024208233,
+    "latency_p95_ms": 28.47833398845978,
+    "tokens_per_second_avg": 78.012255418324,
+    "memory_denials": 0.0
+  },
+  "moe_stub": {
+    "cases_total": 3.0,
+    "cases_ok": 3.0,
+    "error_rate": 0.0,
+    "latency_p50_ms": 13.214417005656287,
+    "latency_p95_ms": 17.804957984481007,
+    "tokens_per_second_avg": 143.0578917648763,
+    "memory_denials": 0.0
+  },
+  "delta": {
+    "latency_p95_ms": -10.673376003978774,
+    "tokens_per_second_avg": 65.0456363465523,
+    "error_rate": 0.0
+  },
+  "gates": {
+    "stub": {
+      "error_rate_ok": true,
+      "p95_ok": true,
+      "tps_ok": true,
+      "memory_denials_ok": true
+    },
+    "moe_stub": {
+      "error_rate_ok": true,
+      "p95_ok": true,
+      "tps_ok": true,
+      "memory_denials_ok": true
+    }
+  }
+}

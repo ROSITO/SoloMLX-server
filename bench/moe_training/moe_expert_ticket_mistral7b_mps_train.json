@@ -1,0 +1,54 @@
+{
+  "model_id": "mistralai/Mistral-7B-Instruct-v0.2",
+  "layers": [
+    10
+  ],
+  "steps": 36,
+  "loss_start": 6.076131820678711,
+  "final_loss": 0.9887762665748596,
+  "loss_delta": -5.087355554103851,
+  "loss_min": 0.734622061252594,
+  "loss_max": 6.076131820678711,
+  "adapter_path": "bench/moe_training/moe_expert_ticket_mistral7b_mps_full.pt",
+  "expert_usage_end": {
+    "10": {
+      "expert_0": 0.125,
+      "expert_1": 0.125,
+      "expert_2": 0.125,
+      "expert_3": 0.125,
+      "expert_4": 0.125,
+      "expert_5": 0.125,
+      "expert_6": 0.125,
+      "expert_7": 0.125
+    }
+  },
+  "shrunk_adapter_path": "bench/moe_training/moe_expert_ticket_mistral7b_mps_full_shrunk4.pt",
+  "shrink_meta": {
+    "layers": {
+      "10": {
+        "old_num_experts": 8,
+        "new_num_experts": 4,
+        "kept_old_indices": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "rank_strategy": "l2_router"
+  },
+  "config": {
+    "num_experts": 8,
+    "top_k": 1,
+    "shared_experts": 0,
+    "lr": 5e-05,
+    "device": "mps",
+    "dtype": "bf16",
+    "low_cpu_mem_usage": true,
+    "offload_unused_experts": true,
+    "router_balance_weight": 0.0,
+    "router_entropy_weight": 0.02,
+    "shrink_to_experts": 4
+  }
+}

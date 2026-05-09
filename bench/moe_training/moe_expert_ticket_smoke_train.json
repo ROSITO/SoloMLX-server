@@ -1,0 +1,54 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "layers": [
+    10
+  ],
+  "steps": 8,
+  "loss_start": 6.992480754852295,
+  "final_loss": 6.689805030822754,
+  "loss_delta": -0.302675724029541,
+  "loss_min": 5.400986671447754,
+  "loss_max": 6.992480754852295,
+  "adapter_path": "bench/moe_training/moe_expert_ticket_smoke_full.pt",
+  "expert_usage_end": {
+    "10": {
+      "expert_0": 0.125,
+      "expert_1": 0.125,
+      "expert_2": 0.125,
+      "expert_3": 0.125,
+      "expert_4": 0.125,
+      "expert_5": 0.125,
+      "expert_6": 0.125,
+      "expert_7": 0.125
+    }
+  },
+  "shrunk_adapter_path": "bench/moe_training/moe_expert_ticket_smoke_full_shrunk4.pt",
+  "shrink_meta": {
+    "layers": {
+      "10": {
+        "old_num_experts": 8,
+        "new_num_experts": 4,
+        "kept_old_indices": [
+          0,
+          1,
+          2,
+          3
+        ]
+      }
+    },
+    "rank_strategy": "l2_router"
+  },
+  "config": {
+    "num_experts": 8,
+    "top_k": 1,
+    "shared_experts": 0,
+    "lr": 5e-05,
+    "device": "cpu",
+    "dtype": "auto",
+    "low_cpu_mem_usage": false,
+    "offload_unused_experts": false,
+    "router_balance_weight": 0.0,
+    "router_entropy_weight": 0.02,
+    "shrink_to_experts": 4
+  }
+}

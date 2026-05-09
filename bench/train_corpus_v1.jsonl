@@ -1,0 +1,12 @@
+{"text":"MLXServe optimise l'inference locale sur Apple Silicon avec une API compatible OpenAI."}
+{"text":"Un modele MoE active seulement une partie des experts pour reduire le compute par token."}
+{"text":"Le top-k routing selectionne les experts pertinents pour chaque token selon un router appris."}
+{"text":"L'objectif cost-first est de maintenir la qualite tout en reduisant latence et memoire."}
+{"text":"Le cache KV peut devenir un goulet d'etranglement si la longueur de contexte explose."}
+{"text":"Les garde-fous memoire evitent les freezes en refusant les requetes en zone critique."}
+{"text":"Une conversion partielle des couches FFN vers MoE limite le risque et accelere les iterations."}
+{"text":"Le benchmark A/B compare loss, latence p95, tokens par seconde et stabilite des reponses."}
+{"text":"Un router collapse survient quand quelques experts capturent presque tout le trafic token."}
+{"text":"Le balancing loss repartit mieux la charge entre experts et evite la saturation."}
+{"text":"Une architecture sparse peut reduire le cout sans augmenter la taille totale du modele actif."}
+{"text":"Le deploiement local exige des modeles robustes avec faible consommation RAM et swap minimal."}

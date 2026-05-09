@@ -1,0 +1,89 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0
+  },
+  "adapter_path": "bench/moe_training/moe_adapter_v1.pt",
+  "adapter_layers_loaded": 1,
+  "dense": {
+    "avg_loss": 5.179890251159668,
+    "p95_latency_ms": 740.0796249858104
+  },
+  "moe_bridge": {
+    "avg_loss": 5.070901918411255,
+    "p95_latency_ms": 777.4865000101272
+  },
+  "delta": {
+    "avg_loss": -0.10898833274841291,
+    "p95_latency_ms": 37.40687502431683
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.391437530517578,
+      "latency_ms": 740.0796249858104,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120 a 186\"\n\nPour l'utilisateur, la r\u00e9ponse est: \"120"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.872349262237549,
+      "latency_ms": 668.045083002653,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.260509967803955,
+      "latency_ms": 695.5904159985948,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.743217945098877,
+      "latency_ms": 640.29216702329,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.631936550140381,
+      "latency_ms": 663.8436249922961,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.24019193649292,
+      "latency_ms": 712.4687079922296,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'addition de la prix de la vue, vous pouvez utiliser la commande \"+\".\n\nPour l'addition de la prix de la vue, v"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.806551694869995,
+      "latency_ms": 777.4865000101272,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport random\n\ndef generate_random_number(min_value, max_value):\n    return random.randint(min_value, max_value)\n\ndef main():\n    min_value ="
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.202719211578369,
+      "latency_ms": 653.3876250032336,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.626682281494141,
+      "latency_ms": 650.9460830129683,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de l'API est d\u00e9licieuse pour les utiliser pour les r\u00e9f\u00e9rences de l'API de l'API de l'API de l'API de l'API"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.47836446762085,
+      "latency_ms": 738.4517499885987,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled and has a lot of experience in the field.\"\n\nPremise 2: \"The new employee, who was hired"
+    }
+  ]
+}

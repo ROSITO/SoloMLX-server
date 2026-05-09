@@ -56,33 +56,41 @@ class MemoryGuardian:
             pressure=self._memory_pressure_level(),
         )
 
-    def classify(self, estimated_request_gb: float = 0.0) -> MemoryZone:
+    def classify_detail(self, estimated_request_gb: float = 0.0) -> tuple[MemoryZone, str]:
+        """Return memory zone and a short deny reason code (empty when not red)."""
         snap = self.snapshot()
         projected = snap.used_gb + estimated_request_gb
         if snap.pressure == "critical":
             self._last_zone = "red"
-            return "red"
+            return "red", "macos_memory_pressure_critical"
 
         # Hysteresis to avoid oscillation near the threshold.
         soft_to_green = max(0.0, self.soft_limit_gb - 0.5)
         hard_to_yellow = max(0.0, self.hard_limit_gb - 0.5)
 
-        if projected >= self.hard_limit_gb or (projected >= self.soft_limit_gb and snap.swap_used_gb >= 2.0):
+        if projected >= self.hard_limit_gb:
             self._last_zone = "red"
-            return "red"
+            return "red", "projected_over_hard_limit_gb"
+        if projected >= self.soft_limit_gb and snap.swap_used_gb >= 2.0:
+            self._last_zone = "red"
+            return "red", "soft_limit_with_high_swap_gb"
 
         if self._last_zone == "red" and projected >= hard_to_yellow:
-            return "red"
+            return "red", "hysteresis_stay_red_until_below_hard_margin"
         if self._last_zone in ("red", "yellow") and projected >= soft_to_green:
             self._last_zone = "yellow"
-            return "yellow"
+            return "yellow", ""
 
         if projected >= self.soft_limit_gb or snap.pressure == "warning":
             self._last_zone = "yellow"
-            return "yellow"
+            return "yellow", ""
 
         self._last_zone = "green"
-        return "green"
+        return "green", ""
+
+    def classify(self, estimated_request_gb: float = 0.0) -> MemoryZone:
+        zone, _ = self.classify_detail(estimated_request_gb)
+        return zone
 
     def should_unload_idle(self, last_used_ts: float) -> bool:
         return (time.time() - last_used_ts) > self.idle_unload_seconds

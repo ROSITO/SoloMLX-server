@@ -1,0 +1,17 @@
+# MEMORY.md (exemple — à copier en local)
+
+Ce fichier sert de **modèle** pour des notes privées (état machine, modèles testés, réglages RAM).
+
+**Recommandation** : gardez les secrets et chemins personnels hors dépôt. Copiez ce fichier vers `MEMORY.md` (ignoré par git si vous l’ajoutez à `.gitignore`) ou éditez uniquement en local.
+
+```gitignore
+# Exemple .gitignore local
+MEMORY.md
+```
+
+## Contenu type
+
+- Machine : modèle Mac, RAM, macOS
+- Modèles HF utilisés et quantizations
+- Variables `MLXSERVE_*` non standard pour vos essais
+- Liens internes / captures non publiables

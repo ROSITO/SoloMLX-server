@@ -55,6 +55,10 @@ class ChatMessage(BaseModel):
     content: str = Field(min_length=1)
 
 
+class StreamOptions(BaseModel):
+    include_usage: bool = False
+
+
 class ChatCompletionRequest(BaseModel):
     model: str | None = None
     messages: list[ChatMessage] = Field(min_length=1)
@@ -62,6 +66,8 @@ class ChatCompletionRequest(BaseModel):
     top_p: float = Field(default=1.0, ge=0.0, le=1.0)
     max_tokens: int = Field(default=256, gt=0, le=4096)
     stream: bool = False
+    stop: str | list[str] | None = None
+    stream_options: StreamOptions | None = None
 
 
 class ChoiceMessage(BaseModel):
@@ -72,7 +78,7 @@ class ChoiceMessage(BaseModel):
 class ChatChoice(BaseModel):
     index: int = 0
     message: ChoiceMessage
-    finish_reason: Literal["stop"] = "stop"
+    finish_reason: Literal["stop", "length"] = "stop"
 
 
 class Usage(BaseModel):

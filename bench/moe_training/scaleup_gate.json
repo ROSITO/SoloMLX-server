@@ -1,0 +1,10 @@
+{
+  "target_model": "mistralai/Mistral-7B-Instruct-v0.3",
+  "target_license": "apache-2.0",
+  "source_eval": "bench/moe_training/eval_ab_report_adapter_v2_mps.json",
+  "delta_loss": -0.01203117370605522,
+  "delta_p95_latency_ms": -172.46599998907186,
+  "gate_quality_ok": true,
+  "gate_latency_ok": true,
+  "go_scaleup": true
+}

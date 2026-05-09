@@ -501,6 +501,57 @@
     .catalog-item:hover { background: var(--surface-2); }
     .catalog-item .ci-title { font-weight: 600; display: block; }
     .catalog-item .ci-meta { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .catalog-row {
+      display: flex;
+      align-items: stretch;
+      border-bottom: 1px solid var(--border);
+      gap: 0;
+    }
+    .catalog-row:last-child { border-bottom: none; }
+    .catalog-row .catalog-item {
+      flex: 1;
+      border-bottom: none;
+      border-radius: 0;
+    }
+    .catalog-delete {
+      flex-shrink: 0;
+      width: 36px;
+      border: none;
+      border-left: 1px solid var(--border);
+      background: transparent;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1;
+      cursor: pointer;
+      transition: background var(--transition), color var(--transition);
+    }
+    .catalog-delete:hover {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+    }
+    .md-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      margin: 0.75rem 0;
+    }
+    .md-table th,
+    .md-table td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .md-table th {
+      background: var(--surface-2);
+      font-weight: 600;
+    }
+    .md-prose a {
+      color: #93c5fd;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .md-prose a:hover { color: #bfdbfe; }
     .model-pill {
       align-items: flex-start;
       max-width: min(420px, 85vw);
@@ -567,6 +618,9 @@
       <div id="catalogRecommended" class="catalog-list" aria-label="Modèles recommandés"></div>
       <div class="label">Modèles locaux</div>
       <div id="catalogLocal" class="catalog-list" aria-label="Modèles en cache local"></div>
+      <div class="label">Télécharger (HF)</div>
+      <input id="pullModelId" type="text" placeholder="org/modele-4bit" autocomplete="off" />
+      <button type="button" class="btn-small" id="pullModelBtn">Télécharger le modèle</button>
       <div class="label">Clé API (optionnel)</div>
       <input id="apiKey" type="password" placeholder="Bearer non requis en local" autocomplete="off" />
       <div class="row" style="margin-top:10px;">
@@ -661,6 +715,8 @@
     const catalogRecommendedEl = document.getElementById("catalogRecommended");
     const catalogLocalEl = document.getElementById("catalogLocal");
     const refreshCatalogsBtn = document.getElementById("refreshCatalogsBtn");
+    const pullModelIdInput = document.getElementById("pullModelId");
+    const pullModelBtn = document.getElementById("pullModelBtn");
     const apiKeyInput = document.getElementById("apiKey");
 
     const iconCpu = '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 0 0 2.25-2.25V6.75a2.25 2.25 0 0 0-2.25-2.25H6.75A2.25 2.25 0 0 0 4.5 6.75v10.5a2.25 2.25 0 0 0 2.25 2.25Z" /></svg>';
@@ -858,6 +914,7 @@
                   (it.local_path ? " · " + escapeHtml(it.local_path) : "");
                 const short = humanizeModelId(it.id);
                 return (
+                  '<div class="catalog-row">' +
                   '<button type="button" class="catalog-item" data-model-id="' +
                   escapeHtml(it.id) +
                   '" title="' +
@@ -866,7 +923,10 @@
                   escapeHtml(short) +
                   '</span><span class="ci-meta">' +
                   meta +
-                  "</span></button>"
+                  "</span></button>" +
+                  '<button type="button" class="catalog-delete" data-delete-model="' +
+                  escapeHtml(it.id) +
+                  '" title="Supprimer du cache local">×</button></div>'
                 );
               })
               .join("");
@@ -883,6 +943,23 @@
     }
 
     document.getElementById("settingsPanel").addEventListener("click", (e) => {
+      const del = e.target.closest(".catalog-delete[data-delete-model]");
+      if (del) {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = del.getAttribute("data-delete-model");
+        if (!id || !confirm("Supprimer ce modèle du cache local ?")) return;
+        const base = baseUrlInput.value.trim().replace(/\/$/, "");
+        if (!base) return;
+        const hdr = { ...authHeaders() };
+        fetch(base + "/v1/models/" + encodeURIComponent(id), { method: "DELETE", headers: hdr })
+          .then((r) => {
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            return refreshCatalogs();
+          })
+          .catch((err) => alert("Suppression : " + (err.message || err)));
+        return;
+      }
       const btn = e.target.closest(".catalog-item[data-model-id]");
       if (!btn) return;
       const id = btn.getAttribute("data-model-id");
@@ -892,6 +969,30 @@
       syncComposerMeta();
       closeSettingsDrawer();
       modelInput.focus();
+    });
+
+    pullModelBtn.addEventListener("click", () => {
+      const base = baseUrlInput.value.trim().replace(/\/$/, "");
+      const id = pullModelIdInput.value.trim();
+      if (!base || !id) {
+        alert("Indiquez l’URL du serveur et un identifiant de modèle HF.");
+        return;
+      }
+      pullModelBtn.disabled = true;
+      const hdr = { "Content-Type": "application/json", ...authHeaders() };
+      fetch(base + "/v1/models/pull", { method: "POST", headers: hdr, body: JSON.stringify({ model: id }) })
+        .then(async (r) => {
+          if (!r.ok) throw new Error("HTTP " + r.status + " " + (await r.text()).slice(0, 200));
+          return refreshCatalogs();
+        })
+        .then(() => {
+          pullModelIdInput.value = "";
+          alert("Modèle téléchargé ou déjà présent — listes actualisées.");
+        })
+        .catch((err) => alert("Pull : " + (err.message || err)))
+        .finally(() => {
+          pullModelBtn.disabled = false;
+        });
     });
 
     function scheduleRefreshMeta() {
@@ -977,11 +1078,58 @@
             return '<code class="inline-code">' + escapeHtml(seg.slice(1, -1)) + "</code>";
           }
           let t = escapeHtml(seg);
+          t = t.replace(
+            /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g,
+            '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+          );
           t = t.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
           t = t.replace(/\*([^*\n]+)\*/g, "<em>$1</em>");
           return t;
         })
         .join("");
+    }
+
+    function tryRenderGfmTable(text) {
+      const raw = text.replace(/\r/g, "").trim();
+      if (!raw || !raw.includes("|")) return null;
+      const lines = raw.split("\n");
+      if (lines.length < 2) return null;
+      const sep = lines[1].trim();
+      if (!/^\|?[\s\-:|]+$/.test(sep) || !sep.includes("-")) return null;
+      function splitRow(line) {
+        return line
+          .trim()
+          .replace(/^\|/, "")
+          .replace(/\|$/, "")
+          .split("|")
+          .map((c) => c.trim());
+      }
+      const headers = splitRow(lines[0]);
+      if (!headers.length) return null;
+      const bodyLines = lines.slice(2);
+      let html = '<table class="md-table"><thead><tr>';
+      headers.forEach((h) => {
+        html += "<th>" + renderInline(h) + "</th>";
+      });
+      html += "</tr></thead><tbody>";
+      bodyLines.forEach((bl) => {
+        if (!bl.trim()) return;
+        const cells = splitRow(bl);
+        html += "<tr>";
+        for (let i = 0; i < headers.length; i++) {
+          html += "<td>" + renderInline(cells[i] || "") + "</td>";
+        }
+        html += "</tr>";
+      });
+      html += "</tbody></table>";
+      return html;
+    }
+
+    function renderProseSegment(raw) {
+      if (!raw) return "";
+      const table = tryRenderGfmTable(raw);
+      if (table) return table;
+      return '<div class="md-prose">' + renderInline(raw) + "</div>";
     }
 
     function normalizeFenceMarkdown(text) {
@@ -1033,7 +1181,7 @@
       const parts = [];
       for (let i = 0; i < chunks.length; i++) {
         if (i % 2 === 0) {
-          if (chunks[i]) parts.push('<div class="md-prose">' + renderInline(chunks[i]) + "</div>");
+          if (chunks[i]) parts.push(renderProseSegment(chunks[i]));
         } else {
           const { lang, body } = parseFencedCode(chunks[i]);
           const streaming = i === chunks.length - 1 && fenceCount % 2 === 1;

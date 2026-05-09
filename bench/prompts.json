@@ -1,0 +1,38 @@
+[
+  {
+    "id": "general_hello",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Donne une explication courte de MLXServe."
+      }
+    ],
+    "max_tokens": 96,
+    "temperature": 0.1,
+    "top_p": 0.9
+  },
+  {
+    "id": "code_python",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Ecris une fonction Python qui inverse une chaine."
+      }
+    ],
+    "max_tokens": 120,
+    "temperature": 0.1,
+    "top_p": 0.9
+  },
+  {
+    "id": "reasoning_steps",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Si un serveur traite 120 requetes/minute et on monte a 180, de combien en pourcentage cela augmente-t-il ?"
+      }
+    ],
+    "max_tokens": 96,
+    "temperature": 0.1,
+    "top_p": 0.9
+  }
+]

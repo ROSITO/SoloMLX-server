@@ -1,0 +1,21 @@
+{
+  "model_id": "mlx-community/Qwen2.5-Coder-32B-Instruct-3bit",
+  "model_summary": {
+    "model_type": "qwen2"
+  },
+  "prompt_len_chars": 63,
+  "max_tokens": 16,
+  "output_len_chars": 53,
+  "load_wall_s": 135.0027,
+  "generate_wall_s": 4.9641,
+  "tokens_per_s": 3.2231,
+  "peak_memory_bytes_after_load": 14335944712,
+  "peak_memory_bytes_generate_phase": 14459644120,
+  "active_memory_bytes_end": 14335944712,
+  "peak_memory_gib_after_load": 13.351,
+  "peak_memory_gib_generate_phase": 13.467,
+  "active_memory_gib_end": 13.351,
+  "peak_memory_gib_worst": 13.467,
+  "ram_budget_gib": 16.0,
+  "within_ram_budget": true
+}

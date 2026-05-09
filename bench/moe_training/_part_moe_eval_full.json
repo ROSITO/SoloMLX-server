@@ -1,0 +1,91 @@
+{
+  "model_id": "mistralai/Mistral-7B-Instruct-v0.2",
+  "eval_strategy": "sequential_dense_then_moe",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 8,
+    "top_k": 1,
+    "shared_experts": 0,
+    "offload_unused_experts": true
+  },
+  "adapter_path": "bench/moe_training/moe_expert_ticket_mistral7b_mps_full.pt",
+  "adapter_layers_loaded": 1,
+  "dense": {
+    "avg_loss": 4.706792402267456,
+    "p95_latency_ms": 8150.7145829998535
+  },
+  "moe_bridge": {
+    "avg_loss": 4.757261514663696,
+    "p95_latency_ms": 66684.51779099996
+  },
+  "delta": {
+    "avg_loss": 0.05046911239624041,
+    "p95_latency_ms": 58533.80320800011
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 3.329209327697754,
+      "latency_ms": 8150.7145829998535,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nA service goes from 120 to 186 requests per minute. Give the percentage increase and explain the calculation.\n\nTo find the percentage increase, we need to subtract the initial value from the final value"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.674800157546997,
+      "latency_ms": 6422.827749999897,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\nHere's the original function:\n\n```python\ndef get_sum(numbers):\n    total = 0\n    for number in numbers:\n        total += number\n    return total\n```"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 5.333733558654785,
+      "latency_ms": 6249.497208000093,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nTo serve a Large Language Model (LLM) locally on a Mac with strict memory constraints, you can consider the following architecture:\n\n1. **Hardware Requirements:**\n   - Mac with at least 1"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.8282060623168945,
+      "latency_ms": 6285.877874999869,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n1. Injection SQL: Les attaques par injection SQL visent \u00e0 injecter des instructions SQL malveillantes dans des requ\u00eates SQL envoy\u00e9es \u00e0 un serveur de base de donn\u00e9es. Cela"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.36801290512085,
+      "latency_ms": 7115.71504099993,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. Qualit\u00e9 : Assurer la pr\u00e9cision et la fiabilit\u00e9 des mod\u00e8les et des pr\u00e9dictions.\n2. Latence : R\u00e9duire le temps de r\u00e9ponse des mod\u00e8les pour fourn"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.14744758605957,
+      "latency_ms": 66684.51779099996,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\n```python\nimport numpy as np\nimport pandas as pd\nimport matplotlib.pyplot as plt\nimport seaborn as sns\nimport re\nimport nltk\nfrom nltk."
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.896275281906128,
+      "latency_ms": 8372.931417000018,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport re\n\ndef extract_urls(text):\n    urls = re.findall(r'http[s]?://(?:[a-zA-Z]|[0-"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 4.956020355224609,
+      "latency_ms": 8489.004792000287,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n## Introduction\n\nDans ce document, nous proposons une architecture locale pour servir un LLM (Large Language Model) sur Mac avec contrainte memoire stricte. Nous utiliserons une version adaptative"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.08051872253418,
+      "latency_ms": 8694.943459000115,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n## Risques\n\n1. **Injection SQL**: Les requetes SQL malveillantes peuvent etre injectees dans les requetes API.\n2. **XSS (Cross Site Scripting)**: Les"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.706045627593994,
+      "latency_ms": 8198.190791999878,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. **Utiliser des modeles pre-entra\u00een\u00e9s pour les fonctions de transition.**\n2. **Utiliser des modeles de regression pour les fonctions de transition.**\n3. **Util"
+    }
+  ]
+}

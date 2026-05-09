@@ -1,0 +1,23 @@
+{
+  "summary": {
+    "cases_total": 3.0,
+    "cases_ok": 3.0,
+    "error_rate": 0.0,
+    "latency_p50_ms": 11.875333002535626,
+    "latency_p95_ms": 19.985374994575977,
+    "tokens_per_second_avg": 151.9955282174193,
+    "memory_denials": 0.0
+  },
+  "gates": {
+    "error_rate_ok": true,
+    "p95_ok": true,
+    "tps_ok": true,
+    "memory_denials_ok": true
+  },
+  "thresholds": {
+    "max_error_rate": 0.05,
+    "max_p95_ms": 12000.0,
+    "min_tokens_per_second": 3.0,
+    "max_memory_denials": 0.0
+  }
+}

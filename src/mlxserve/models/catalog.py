@@ -31,6 +31,22 @@ CATALOG: list[RecommendedModel] = [
         notes="Use only with conservative max_tokens and low concurrency.",
     ),
     RecommendedModel(
+        id="mlx-community/Mistral-Small-24B-Instruct-2501-4bit",
+        label="Mistral Small 24B Instruct 2501 Q4",
+        ram_min_gb=16,
+        ram_max_gb=32,
+        context="General instruct ~24B (FR/EN among others)",
+        notes="Gate 16 GiB: mlx_moe_bench peak ~12.4 GiB (48 tok) with KV4, quantized_kv_start=32, prefill_step_size=512. Report: bench/moe_training/mlx_bench_mistral_small_24b_4bit_16g_gate.json",
+    ),
+    RecommendedModel(
+        id="mlx-community/Qwen2.5-Coder-32B-Instruct-3bit",
+        label="Qwen2.5 Coder 32B Instruct Q3",
+        ram_min_gb=16,
+        ram_max_gb=36,
+        context="Large code / reasoning (32B class)",
+        notes="Gate 16 GiB: mlx_moe_bench peak ~13.5 GiB (24 tok) with KV4, quantized_kv_start=32, prefill_step_size=512. Code bias.",
+    ),
+    RecommendedModel(
         id="mlx-community/Llama-3.2-3B-Instruct-4bit",
         label="Llama 3.2 3B Instruct Q4",
         ram_min_gb=8,

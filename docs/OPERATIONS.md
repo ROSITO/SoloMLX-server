@@ -97,8 +97,54 @@ Captures d’écran à jour : répertoire [`screenshots/`](screenshots/) (voir a
 
 ---
 
+## Service `launchd` (démarrage au login)
+
+Exemple de plist **à adapter** (chemins utilisateur, clé API via fichier env non versionné) :
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+ "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.example.mlxserve</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/VOTRE_USER/MLXserve/.venv/bin/mlxserve</string>
+    <string>serve</string>
+    <string>--host</string>
+    <string>127.0.0.1</string>
+    <string>--port</string>
+    <string>8080</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/VOTRE_USER/MLXserve</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/VOTRE_USER/Library/Logs/mlxserve.out.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/VOTRE_USER/Library/Logs/mlxserve.err.log</string>
+</dict>
+</plist>
+```
+
+Installation :
+
+```bash
+cp com.example.mlxserve.plist ~/Library/LaunchAgents/
+launchctl load ~/Library/LaunchAgents/com.example.mlxserve.plist
+```
+
+---
+
 ## Liens utiles
 
 - [README.md](../README.md) — référence principale
 - [REVERSE_PROXY.md](REVERSE_PROXY.md) — exposition sécurisée
 - [CHAT_TRANSCRIPT_OUTPUT.md](CHAT_TRANSCRIPT_OUTPUT.md) — comportement du chat
+- [GRAFANA.md](GRAFANA.md) — scrape Prometheus / Grafana
+- [INSTALL_HOMEBREW.md](INSTALL_HOMEBREW.md) — esquisse de formule Homebrew

@@ -1,0 +1,28 @@
+{
+  "steps": 200,
+  "final_loss": 0.019193677231669426,
+  "loss_start": 0.09243869036436081,
+  "loss_delta": -0.07324501313269138,
+  "loss_min": 0.01903117448091507,
+  "loss_max": 0.09243869036436081,
+  "router_entropy_avg": 1.309988290667534,
+  "expert_usage_avg": {
+    "expert_0": 0.2499210764467716,
+    "expert_1": 0.24840356789529325,
+    "expert_2": 0.25034043803811074,
+    "expert_3": 0.25133491672575475
+  },
+  "config": {
+    "batch_size": 8,
+    "seq_len": 32,
+    "dim": 256,
+    "hidden_dim": 512,
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 1,
+    "lr": 0.0002,
+    "balance_coeff": 0.05,
+    "compute_coeff": 0.01,
+    "device": "cpu"
+  }
+}

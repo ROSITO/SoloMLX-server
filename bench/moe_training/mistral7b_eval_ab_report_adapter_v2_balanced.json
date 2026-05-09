@@ -1,0 +1,89 @@
+{
+  "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0
+  },
+  "adapter_path": "bench/moe_training/mistral7b_moe_adapter_v2_balanced.pt",
+  "adapter_layers_loaded": 1,
+  "dense": {
+    "avg_loss": 4.59488468170166,
+    "p95_latency_ms": 91244.14058300317
+  },
+  "moe_bridge": {
+    "avg_loss": 4.374384832382202,
+    "p95_latency_ms": 87265.54170800955
+  },
+  "delta": {
+    "avg_loss": -0.22049984931945765,
+    "p95_latency_ms": -3978.5988749936223
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 3.108903646469116,
+      "latency_ms": 91244.14058300317,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour calculer le pourcentage d'augmentation, il faut utiliser la formule suivante :\n\n(Nouvelle valeur - Valeur initiale) / Valeur initiale"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.6410672664642334,
+      "latency_ms": 7500.372125010472,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\ndef get_sum(a, b):\n    if type(a) != int or type(b) != int:\n        return \"Error: Both arguments must be integers.\"\n    else"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 5.329436779022217,
+      "latency_ms": 8345.47983299126,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nPour servir un LLM (Large Language Model) sur un Mac avec contrainte memoire stricte, il est important d'optimiser l'architecture locale pour maximiser les performances tout en minimis"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.725915908813477,
+      "latency_ms": 7597.1542919869535,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n1. Risque d'exposition de donn\u00e9es sensibles : Les API locales LLM peuvent exposer des donn\u00e9es sensibles telles que les informations d'identification, les donn\u00e9es personnelles"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.169099807739258,
+      "latency_ms": 7847.93545800494,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. Qualit\u00e9 : La qualit\u00e9 d'un mod\u00e8le de machine learning est mesur\u00e9e par son taux de pr\u00e9cision, de r\u00e9call et de F1-score. Il est important de choisir un"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 2.9883573055267334,
+      "latency_ms": 87265.54170800955,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour calculer le pourcentage d'augmentation, il faut utiliser la formule suivante :\n\n(Nouvelle valeur - Valeur initiale) / Valeur initiale"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.5538558959960938,
+      "latency_ms": 7595.512667001458,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\ndef get_sum(a, b):\n    if type(a) != int or type(b) != int:\n        return \"Error: Both arguments must be integers.\"\n    return"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 4.964690685272217,
+      "latency_ms": 7633.333083998878,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nPour servir un LLM sur Mac avec contrainte m\u00e9moire stricte, il est important de choisir une architecture locale optimis\u00e9e pour les ressources et la performance. Voici une architecture locale possible"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.453643798828125,
+      "latency_ms": 7474.786083999788,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n1. Risque de r\u00e9v\u00e9lations de donn\u00e9es sensibles :\n   Les donn\u00e9es sensibles telles que les informations personnelles, les cl\u00e9s d'API, les informations de connexion"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 4.911376476287842,
+      "latency_ms": 7715.782332990784,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. Qualit\u00e9 : L'objectif est de produire des mod\u00e8les qui sont pr\u00e9cis, robustes et g\u00e9n\u00e9ralisables. Cela peut \u00eatre obtenu en utilisant des donn\u00e9es d'entra\u00ee"
+    }
+  ]
+}

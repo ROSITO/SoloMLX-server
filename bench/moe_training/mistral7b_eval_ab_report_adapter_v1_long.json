@@ -1,0 +1,89 @@
+{
+  "model_id": "mistralai/Mistral-7B-Instruct-v0.3",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0
+  },
+  "adapter_path": "bench/moe_training/mistral7b_moe_adapter_v1_long.pt",
+  "adapter_layers_loaded": 1,
+  "dense": {
+    "avg_loss": 4.59488468170166,
+    "p95_latency_ms": 75126.07549998211
+  },
+  "moe_bridge": {
+    "avg_loss": 4.274527978897095,
+    "p95_latency_ms": 85764.5894169982
+  },
+  "delta": {
+    "avg_loss": -0.3203567028045651,
+    "p95_latency_ms": 10638.513917016098
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 3.108903646469116,
+      "latency_ms": 75126.07549998211,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour calculer le pourcentage d'augmentation, il faut utiliser la formule suivante :\n\n(Nouvelle valeur - Valeur initiale) / Valeur initiale"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.6410672664642334,
+      "latency_ms": 7693.468583020149,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\ndef get_sum(a, b):\n    if type(a) != int or type(b) != int:\n        return \"Error: Both arguments must be integers.\"\n    else"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 5.329436779022217,
+      "latency_ms": 7592.485458008014,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nPour servir un LLM (Large Language Model) sur un Mac avec contrainte memoire stricte, il est important d'optimiser l'architecture locale pour maximiser les performances tout en minimis"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.725915908813477,
+      "latency_ms": 7438.169666012982,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n1. Risque d'exposition de donn\u00e9es sensibles : Les API locales LLM peuvent exposer des donn\u00e9es sensibles telles que les informations d'identification, les donn\u00e9es personnelles"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.169099807739258,
+      "latency_ms": 8405.792999983532,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. Qualit\u00e9 : La qualit\u00e9 d'un mod\u00e8le de machine learning est mesur\u00e9e par son taux de pr\u00e9cision, de r\u00e9call et de F1-score. Il est important de choisir un"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 3.4768102169036865,
+      "latency_ms": 85764.5894169982,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour calculer le pourcentage d'augmentation, on utilise la formule suivante :\n\n(Nouvelle valeur - Valeur initiale) / Valeur initiale * "
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.5185909271240234,
+      "latency_ms": 8063.788042025408,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\ndef get_sum(lst):\n    if not lst:\n        return None\n    total = 0\n    for num in lst:\n        if isinstance(num, int):\n"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 4.396978855133057,
+      "latency_ms": 7949.792250001337,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nPour servir un LLM sur Mac avec contrainte memoire stricte, il est important d'optimiser l'utilisation de la memoire en utilisant des architectures de modeles plus petits et"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.16441535949707,
+      "latency_ms": 7979.539583000587,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\n1. **Risque de mauvais comportement des utilisateurs**: Les utilisateurs peuvent envoyer des requ\u00eates malveillantes ou des requ\u00eates en trop grand nombre, ce qui peut"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 4.815844535827637,
+      "latency_ms": 7663.081915990915,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\n1. **Utiliser des checkpoints plus fr\u00e9quents**: Cela permet de r\u00e9duire la quantit\u00e9 de donn\u00e9es \u00e0 traiter en une seule it\u00e9ration, ce qui r\u00e9duit la latence.\n"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "model_id": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+  "model_summary": {
+    "model_type": "qwen2"
+  },
+  "prompt_len_chars": 63,
+  "max_tokens": 8,
+  "output_len_chars": 25,
+  "load_wall_s": 1.0946,
+  "generate_wall_s": 0.1731,
+  "tokens_per_s": 46.2034,
+  "peak_memory_bytes_after_load": 281161480,
+  "peak_memory_bytes_generate_phase": 312971240,
+  "active_memory_bytes_end": 281161480,
+  "peak_memory_gib_after_load": 0.262,
+  "peak_memory_gib_generate_phase": 0.291
+}

@@ -1,0 +1,89 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "layers": [
+    2,
+    6,
+    10
+  ],
+  "moe_config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 1
+  },
+  "dense": {
+    "avg_loss": 5.179890251159668,
+    "p95_latency_ms": 600.6446249957662
+  },
+  "moe_bridge": {
+    "avg_loss": 6.866647434234619,
+    "p95_latency_ms": 922.4124579923227
+  },
+  "delta": {
+    "avg_loss": 1.6867571830749517,
+    "p95_latency_ms": 321.76783299655654
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.391437530517578,
+      "latency_ms": 600.6446249957662,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120 a 186\"\n\nPour l'utilisateur, la r\u00e9ponse est: \"120"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.872349262237549,
+      "latency_ms": 576.0089170071296,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.260509967803955,
+      "latency_ms": 563.0207080102991,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.743217945098877,
+      "latency_ms": 567.2385420184582,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.631936550140381,
+      "latency_ms": 541.3799170055427,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 6.229912757873535,
+      "latency_ms": 743.34462499246,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nLaissez votre approfitionnez une d\u00e9claration de d\u00e9couvert pour les d\u00e9coulements de la d\u00e9claration de d\u00e9coulement pour les d\u00e9coulements de d\u00e9coulements de d\u00e9coulements de d\u00e9"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 5.63764762878418,
+      "latency_ms": 787.6409160089679,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple. \n\n```python\ndef get_user_info():\n    user_info = {}\n    user_info['user_id'] = input(\"Enter your user ID \")\n    user_info['user_name'] = input(\"Enter"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 8.456448554992676,
+      "latency_ms": 812.9397079756018,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nThelrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlrlr"
+    },
+    {
+      "id": "q_security",
+      "loss": 7.640237331390381,
+      "latency_ms": 922.4124579923227,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa d\u00e9claration de la d\u00e9claration de la d\u00e9claration de la d\u00e9claration de la d\u00e9claration de la d\u00e9claration de la d\u00e9claration de la d\u00e9claration de la d\u00e9claration de la"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 6.368990898132324,
+      "latency_ms": 849.7440000064671,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nLa proposation des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9quipes des \u00e9qu"
+    }
+  ]
+}

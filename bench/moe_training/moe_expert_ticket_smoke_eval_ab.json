@@ -1,0 +1,141 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "eval_strategy": "sequential_dense_then_moe_then_moe_shrunk",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 8,
+    "top_k": 1,
+    "shared_experts": 0,
+    "offload_unused_experts": false
+  },
+  "adapter_path": "bench/moe_training/moe_expert_ticket_smoke_full.pt",
+  "adapter_layers_loaded": 1,
+  "dense": {
+    "avg_loss": 5.179890251159668,
+    "p95_latency_ms": 691.0233750240877
+  },
+  "moe_bridge": {
+    "avg_loss": 5.168490552902222,
+    "p95_latency_ms": 694.017999980133
+  },
+  "delta": {
+    "avg_loss": -0.011399698257445579,
+    "p95_latency_ms": 2.9946249560452998
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.391437530517578,
+      "latency_ms": 691.0233750240877,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120 a 186\"\n\nPour l'utilisateur, la r\u00e9ponse est: \"120"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.872349262237549,
+      "latency_ms": 666.6113749961369,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.260509967803955,
+      "latency_ms": 644.8765840032138,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.743217945098877,
+      "latency_ms": 651.254499971401,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.631936550140381,
+      "latency_ms": 651.9605000503361,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.373867988586426,
+      "latency_ms": 694.017999980133,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120/186 = 1.25\".\n\nLa r\u00e9ponse est: \"120/18"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.8665497303009033,
+      "latency_ms": 689.5030420273542,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.253453254699707,
+      "latency_ms": 675.3701660200022,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.731723785400391,
+      "latency_ms": 685.6317920028232,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.616858005523682,
+      "latency_ms": 674.2330419947393,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ],
+  "adapter_path_shrunk": "bench/moe_training/moe_expert_ticket_smoke_full_shrunk4.pt",
+  "moe_shrunk_meta": {
+    "num_experts_inferred": 4,
+    "num_experts_used": 4,
+    "adapter_layers_loaded": 1
+  },
+  "moe_bridge_shrunk": {
+    "avg_loss": 5.169852256774902,
+    "p95_latency_ms": 841.654958028812
+  },
+  "delta_shrunk_vs_dense": {
+    "avg_loss": -0.01003799438476527,
+    "p95_latency_ms": 150.63158300472423
+  },
+  "delta_shrunk_vs_moe": {
+    "avg_loss": 0.0013617038726803088,
+    "p95_latency_ms": 147.63695804867893
+  },
+  "samples_moe_bridge_shrunk": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.377669811248779,
+      "latency_ms": 705.2159589948133,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120/186 = 1.25\".\n\nLa r\u00e9ponse est: \"120/18"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.8663110733032227,
+      "latency_ms": 676.823207992129,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.252577304840088,
+      "latency_ms": 664.9086670367979,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.73475456237793,
+      "latency_ms": 770.464625034947,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.617948532104492,
+      "latency_ms": 841.654958028812,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ]
+}

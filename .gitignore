@@ -9,3 +9,12 @@ __pycache__/
 *.pyo
 *.egg-info/
 .venv/
+.env
+docs/.env
+!.env.example
+!docs/.env.example
+
+# Bench: keep JSON/CSV reports; checkpoints are multi‑GiB local artifacts
+bench/**/*.pt
+# Local symlink to external volume (machine-specific)
+bench/moe_conversion

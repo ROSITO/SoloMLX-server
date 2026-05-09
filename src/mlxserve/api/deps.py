@@ -18,11 +18,36 @@ model_manager = ModelManager()
 metrics = MetricsStore()
 
 
+def _jwt_hs256_accepted(token: str) -> bool:
+    if not settings.jwt_hs256_secret:
+        return False
+    try:
+        import jwt
+    except ImportError:
+        return False
+    try:
+        if settings.jwt_audience:
+            jwt.decode(
+                token,
+                settings.jwt_hs256_secret,
+                algorithms=["HS256"],
+                audience=settings.jwt_audience,
+            )
+        else:
+            jwt.decode(token, settings.jwt_hs256_secret, algorithms=["HS256"])
+        return True
+    except Exception:
+        return False
+
+
 def require_api_key(authorization: str | None = Header(default=None)) -> None:
-    if not settings.api_key:
+    if not settings.api_key and not settings.jwt_hs256_secret:
         return
     if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Missing API key")
     token = authorization.removeprefix("Bearer ").strip()
-    if not secrets.compare_digest(token, settings.api_key):
-        raise HTTPException(status_code=401, detail="Invalid API key")
+    if _jwt_hs256_accepted(token):
+        return
+    if settings.api_key and secrets.compare_digest(token, settings.api_key):
+        return
+    raise HTTPException(status_code=401, detail="Invalid API key")

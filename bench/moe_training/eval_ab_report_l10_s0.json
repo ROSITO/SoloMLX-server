@@ -1,0 +1,87 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-135M-Instruct",
+  "layers": [
+    10
+  ],
+  "moe_config": {
+    "num_experts": 4,
+    "top_k": 1,
+    "shared_experts": 0
+  },
+  "dense": {
+    "avg_loss": 5.179890251159668,
+    "p95_latency_ms": 1169.3876249773894
+  },
+  "moe_bridge": {
+    "avg_loss": 6.565822601318359,
+    "p95_latency_ms": 1142.2247080190573
+  },
+  "delta": {
+    "avg_loss": 1.3859323501586918,
+    "p95_latency_ms": -27.16291695833206
+  },
+  "samples_dense": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 4.391437530517578,
+      "latency_ms": 1169.3876249773894,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nPour l'utilisateur, la r\u00e9ponse est: \"120 a 186\"\n\nPour l'utilisateur, la r\u00e9ponse est: \"120"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 3.872349262237549,
+      "latency_ms": 1104.9553749908227,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport unittest\n\nclass TestErrorHandler(unittest.TestCase):\n    def test_error_handler(self):\n        self.assertRaises(Exception, lambda: self.assertRaises(TypeError, lambda: self.assertRaises"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 6.260509967803955,
+      "latency_ms": 1138.8190840079915,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\n**1. **Le LLM est une structure de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe de l'\u00e9quipe"
+    },
+    {
+      "id": "q_security",
+      "loss": 5.743217945098877,
+      "latency_ms": 1106.652166985441,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f\u00e9rence de la r\u00e9f"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 5.631936550140381,
+      "latency_ms": 1056.2289170047734,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nPremise 1: \"The new employee, who was hired last week, is very skilled in the field of marketing. He has a good understanding of the company's goals and objectives. He has been working closely with the"
+    }
+  ],
+  "samples_moe_bridge": [
+    {
+      "id": "q_reasoning_pct",
+      "loss": 5.217275619506836,
+      "latency_ms": 1139.9121669819579,
+      "output": "Un service passe de 120 a 186 requetes/minute. Donne le pourcentage d'augmentation et explique le calcul.\n\nLa d\u00e9finition des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9fis des d\u00e9"
+    },
+    {
+      "id": "q_code_refactor",
+      "loss": 4.9995503425598145,
+      "latency_ms": 1084.654167003464,
+      "output": "Refactore cette fonction Python pour gerer les erreurs proprement et ajoute un test unitaire simple.\n\n```python\nimport pytest\n\ndef test_test_function():\n    assert pytest.raises(TypeError, \"TypeError: function not defined\")\n    assert pytest.raises(TypeError, \"TypeError: function not defined\")\n    assert"
+    },
+    {
+      "id": "q_system_design",
+      "loss": 9.139487266540527,
+      "latency_ms": 1115.6092090241145,
+      "output": "Propose une architecture locale pour servir un LLM sur Mac avec contrainte memoire stricte.\n\nThe following are the the following are the following are the following are the following are the following are the following are the following are the following are the following are the following are the following are the following are the following are the following are"
+    },
+    {
+      "id": "q_security",
+      "loss": 7.177204608917236,
+      "latency_ms": 1108.5731660132296,
+      "output": "Donne 5 risques de securite API pour un serveur LLM local et leur mitigation.\n\nLa d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9finition des d\u00e9"
+    },
+    {
+      "id": "q_summarization",
+      "loss": 6.295595169067383,
+      "latency_ms": 1142.2247080190573,
+      "output": "Resume les compromis entre qualite, latence et cout d'inference en 6 points.\n\nLa compr\u00e9hension des \u00e9l\u00e9ments dans une compr\u00e9hension des \u00e9l\u00e9ments dans une compr\u00e9hension des \u00e9l\u00e9ments dans une compr\u00e9hension des \u00e9l\u00e9ments dans une compr\u00e9hension des"
+    }
+  ]
+}
