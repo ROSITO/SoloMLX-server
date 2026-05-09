@@ -145,28 +145,6 @@ def _sanitize_completion_text(text: str) -> str:
     return _strip_trailing_role_prefix_fragment(cleaned)
 
 
-def _sanitize_completion_text_streaming(text: str) -> str:
-    """Like `_sanitize_completion_text` but never truncates at mid-stream markers.
-
-    Truncating when a marker *appears* later in the buffer makes `sanitized` shorter than
-    already-emitted text and breaks incremental SSE deltas (garbled / vertical fragments in UIs).
-    Final chunks still run through full `_sanitize_completion_text`.
-    """
-    cleaned = text.strip()
-    lowered = cleaned.lower().lstrip()
-    cleaned = cleaned.lstrip()
-    changed = True
-    while changed:
-        changed = False
-        for prefix in ("assistant:", "user:", "system:"):
-            if lowered.startswith(prefix):
-                cleaned = cleaned[len(prefix):].lstrip()
-                lowered = cleaned.lower()
-                changed = True
-                break
-    return _strip_trailing_role_prefix_fragment(cleaned)
-
-
 @app.exception_handler(HTTPException)
 async def mlxserve_http_exception_handler(request: Request, exc: HTTPException):
     if not request.url.path.startswith("/v1/"):
@@ -375,7 +353,6 @@ async def chat_completions(req: ChatCompletionRequest):
 
             def _emit_delta(sanitized: str) -> str:
                 nonlocal emitted_len
-                emitted_len = min(emitted_len, len(sanitized))
                 delta = sanitized[emitted_len:]
                 emitted_len = len(sanitized)
                 return delta
@@ -393,7 +370,12 @@ async def chat_completions(req: ChatCompletionRequest):
                     stop_sequences=stops or None,
                 ):
                     full_text += chunk
-                    sanitized = _sanitize_completion_text_streaming(full_text)
+                    # Buffer raw completions before sanitizing/emitting so marker-based truncation
+                    # in `_sanitize_completion_text` does not shorten `sanitized` past `emitted_len`
+                    # (which produced garbled incremental deltas when this gate was removed).
+                    if len(full_text) < 24:
+                        continue
+                    sanitized = _sanitize_completion_text(full_text)
                     delta = _emit_delta(sanitized)
                     if not delta:
                         continue
