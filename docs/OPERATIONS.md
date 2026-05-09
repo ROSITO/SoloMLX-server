@@ -27,6 +27,28 @@ MLXSERVE_RUNTIME_BACKEND=mlx \
 
 ---
 
+## LaunchAgent macOS (service en arrière-plan)
+
+Le terminal n’est plus bloqué : un **LaunchAgent** utilisateur relance MLXServe à l’ouverture de session (avec logs).
+
+Depuis la racine du clone, après `pip install -e ".[mlx]"` :
+
+```bash
+./scripts/install_launchagent_macos.sh install
+```
+
+Désinstaller :
+
+```bash
+./scripts/install_launchagent_macos.sh uninstall
+```
+
+Le dépôt par défaut est `~/Documents/MLXServe/SoloMLX-server` ; sinon :  
+`SOLOMLX_ROOT=/chemin/vers/SoloMLX-server ./scripts/install_launchagent_macos.sh install`  
+Les variables `MLXSERVE_*` peuvent être exportées **avant** la commande pour surcharger les défauts du script.
+
+---
+
 ## Vérifications rapides
 
 ### Santé et zone mémoire
