@@ -31,6 +31,8 @@ MLXSERVE_RUNTIME_BACKEND=mlx \
 
 Le terminal n’est plus bloqué : un **LaunchAgent** utilisateur relance MLXServe à l’ouverture de session (avec logs).
 
+**Port** : le script installe par défaut **`MLXSERVE_PORT=8088`** pour éviter le conflit avec un **Docker / front** déjà sur **8080** (ex. SafePerform `deploy-docker-web`). Santé : `curl -s http://127.0.0.1:8088/health`. Pour du 8080 classique : `MLXSERVE_PORT=8080 ./scripts/install_launchagent_macos.sh install` (après avoir libéré le port).
+
 Depuis la racine du clone, après `pip install -e ".[mlx]"` :
 
 ```bash

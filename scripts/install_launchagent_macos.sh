@@ -2,6 +2,9 @@
 # Install or remove a user LaunchAgent for MLXServe (macOS).
 # Run ON the Mac where MLXServe lives (e.g. ollamac), after venv + pip install -e ".[mlx]".
 #
+# Default port is 8088 (not 8080) so MLXServe can coexist with stacks that bind host :8080
+# (e.g. SafePerform deploy-docker-web). Override: MLXSERVE_PORT=8080 ./scripts/install_launchagent_macos.sh install
+#
 # Install (defaults):  ./scripts/install_launchagent_macos.sh install
 # Uninstall:           ./scripts/install_launchagent_macos.sh uninstall
 #
@@ -18,7 +21,7 @@ ERR_LOG="${HOME}/Library/Logs/mlxserve.err.log"
 
 # Defaults (override via env before calling this script)
 MLXSERVE_HOST="${MLXSERVE_HOST:-127.0.0.1}"
-MLXSERVE_PORT="${MLXSERVE_PORT:-8080}"
+MLXSERVE_PORT="${MLXSERVE_PORT:-8088}"
 MLXSERVE_RUNTIME_BACKEND="${MLXSERVE_RUNTIME_BACKEND:-mlx}"
 MLXSERVE_DEFAULT_MODEL="${MLXSERVE_DEFAULT_MODEL:-mlx-community/Mistral-Small-24B-Instruct-2501-4bit}"
 MLXSERVE_PREFILL_STEP_SIZE="${MLXSERVE_PREFILL_STEP_SIZE:-512}"
