@@ -110,7 +110,7 @@ Préfixe commun : **`MLXSERVE_`**.
 | `MLXSERVE_API_KEY` | Si non vide, exige `Authorization: Bearer …` (ou JWT si configuré) | *(vide)* |
 | `MLXSERVE_JWT_HS256_SECRET` | Si non vide, accepte un JWT HS256 en plus de la clé statique | *(vide)* |
 | `MLXSERVE_JWT_AUDIENCE` | Audience attendue du JWT (optionnel) | *(vide)* |
-| `MLXSERVE_DEFAULT_MODEL` | Modèle Hugging Face / chemin MLX par défaut | `mlx-community/Qwen2.5-0.5B-Instruct-4bit` |
+| `MLXSERVE_DEFAULT_MODEL` | Modèle Hugging Face / chemin MLX par défaut | `mlx-community/Qwen2.5-7B-Instruct-4bit` |
 | `MLXSERVE_RUNTIME_BACKEND` | `auto`, `mlx` ou `stub` | `auto` |
 | `MLXSERVE_MAX_MEMORY_GB` | Limite « soft » mémoire (Go) | `14.0` |
 | `MLXSERVE_HARD_MEMORY_GB` | Limite « hard » (Go) | `15.0` |
@@ -167,7 +167,7 @@ Réponse typique :
   "object": "list",
   "data": [
     {
-      "id": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+      "id": "mlx-community/Qwen2.5-7B-Instruct-4bit",
       "object": "model",
       "owned_by": "mlxserve"
     }
@@ -181,7 +181,7 @@ Réponse typique :
 curl -s http://127.0.0.1:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+    "model": "mlx-community/Qwen2.5-7B-Instruct-4bit",
     "messages": [{"role": "user", "content": "Bonjour"}],
     "max_tokens": 128,
     "temperature": 0.2
@@ -243,7 +243,7 @@ from mlx_lm import load, stream_generate
 from mlx_lm.sample_utils import make_sampler
 import time
 
-model_id = "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+model_id = "mlx-community/Qwen2.5-7B-Instruct-4bit"
 m, t = load(model_id)
 sampler = make_sampler(temp=0.2, top_p=0.95)
 t0 = time.time()

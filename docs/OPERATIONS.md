@@ -96,7 +96,7 @@ curl -s http://127.0.0.1:8080/v1/models \
 curl -s http://127.0.0.1:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "mlx-community/Qwen2.5-0.5B-Instruct-4bit",
+    "model": "mlx-community/Qwen2.5-7B-Instruct-4bit",
     "messages": [{"role": "user", "content": "Bonjour"}],
     "max_tokens": 96
   }'

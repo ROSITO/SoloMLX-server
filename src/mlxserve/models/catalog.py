@@ -15,28 +15,20 @@ class RecommendedModel:
 
 CATALOG: list[RecommendedModel] = [
     RecommendedModel(
+        id="mlx-community/Qwen2.5-7B-Instruct-4bit",
+        label="Qwen2.5 7B Instruct Q4",
+        ram_min_gb=16,
+        ram_max_gb=24,
+        context="Higher quality chat/code",
+        notes="Default server model; use conservative max_tokens and low concurrency on 16 GB.",
+    ),
+    RecommendedModel(
         id="mlx-community/Qwen2.5-3B-Instruct-4bit",
         label="Qwen2.5 3B Instruct Q4",
         ram_min_gb=8,
         ram_max_gb=16,
         context="General purpose assistant",
         notes="Best stability baseline for 16 GB machines.",
-    ),
-    RecommendedModel(
-        id="mlx-community/Qwen2.5-7B-Instruct-4bit",
-        label="Qwen2.5 7B Instruct Q4",
-        ram_min_gb=16,
-        ram_max_gb=24,
-        context="Higher quality chat/code",
-        notes="Use only with conservative max_tokens and low concurrency.",
-    ),
-    RecommendedModel(
-        id="mlx-community/Mistral-Small-24B-Instruct-2501-4bit",
-        label="Mistral Small 24B Instruct 2501 Q4",
-        ram_min_gb=16,
-        ram_max_gb=32,
-        context="General instruct ~24B (FR/EN among others)",
-        notes="Gate 16 GiB: mlx_moe_bench peak ~12.4 GiB (48 tok) with KV4, quantized_kv_start=32, prefill_step_size=512. Report: bench/moe_training/mlx_bench_mistral_small_24b_4bit_16g_gate.json",
     ),
     RecommendedModel(
         id="mlx-community/Qwen2.5-Coder-32B-Instruct-3bit",

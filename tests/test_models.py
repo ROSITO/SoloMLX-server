@@ -5,14 +5,14 @@ from mlxserve.api.app import app, display_hf_model_id
 
 def test_display_hf_model_id_from_cache_path():
     path = (
-        "/Users/x/.cache/huggingface/hub/models--mlx-community--Mistral-7B-Instruct-v0.3-4bit"
+        "/Users/x/.cache/huggingface/hub/models--mlx-community--Qwen2.5-7B-Instruct-4bit"
         "/snapshots/a4b8f870474b0eb527f466a03fbc187830d271f5"
     )
-    assert display_hf_model_id(path) == "mlx-community/Mistral-7B-Instruct-v0.3-4bit"
+    assert display_hf_model_id(path) == "mlx-community/Qwen2.5-7B-Instruct-4bit"
 
 
 def test_display_hf_model_id_passes_through_repo_id():
-    assert display_hf_model_id("mlx-community/Qwen2.5-0.5B-Instruct-4bit") == "mlx-community/Qwen2.5-0.5B-Instruct-4bit"
+    assert display_hf_model_id("mlx-community/Qwen2.5-7B-Instruct-4bit") == "mlx-community/Qwen2.5-7B-Instruct-4bit"
 
 
 def test_models_endpoint_returns_list():
