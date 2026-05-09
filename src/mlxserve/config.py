@@ -1,3 +1,4 @@
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,7 +16,9 @@ class Settings(BaseSettings):
     default_model: str = "mlx-community/Qwen2.5-7B-Instruct-4bit"
     runtime_backend: str = "auto"
     prefill_step_size: int = 1024
-    kv_bits: int = 4
+    # None = full-precision KV (default). int 4 etc. can corrupt Qwen2.5 instruct on mlx-lm (garbled output).
+    # Opt in with MLXSERVE_KV_BITS=4 when you accept the quality / memory tradeoff.
+    kv_bits: int | None = None
     kv_group_size: int = 64
     quantized_kv_start: int = 32
     cors_allow_origins: str = "*"
@@ -44,6 +47,19 @@ class Settings(BaseSettings):
     generation_repetition_context_size: int = 64
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
+
+    @field_validator("kv_bits", mode="before")
+    @classmethod
+    def _coerce_kv_bits(cls, v):
+        if v is None or v == "":
+            return None
+        if isinstance(v, str):
+            s = v.strip().lower()
+            if s in ("none", "off", "false", ""):
+                return None
+            v = int(s)
+        i = int(v)
+        return None if i <= 0 else i
 
 
 settings = Settings()

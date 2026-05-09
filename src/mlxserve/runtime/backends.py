@@ -214,7 +214,7 @@ class MLXLMBackend(RuntimeBackend):
         moe_resident_experts: int = 0,
         moe_resident_strategy: str = "l2",
         moe_single_expert_fastpath: bool = True,
-        repetition_penalty: float = 1.12,
+        repetition_penalty: float = 1.0,
         repetition_context_size: int = 64,
     ) -> None:
         self.model_name: str | None = None

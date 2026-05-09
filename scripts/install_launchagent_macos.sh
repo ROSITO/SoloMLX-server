@@ -33,7 +33,8 @@ MLXSERVE_PORT="${MLXSERVE_PORT:-8088}"
 MLXSERVE_RUNTIME_BACKEND="${MLXSERVE_RUNTIME_BACKEND:-mlx}"
 MLXSERVE_DEFAULT_MODEL="${MLXSERVE_DEFAULT_MODEL:-mlx-community/Qwen2.5-7B-Instruct-4bit}"
 MLXSERVE_PREFILL_STEP_SIZE="${MLXSERVE_PREFILL_STEP_SIZE:-512}"
-MLXSERVE_KV_BITS="${MLXSERVE_KV_BITS:-4}"
+# Leave empty to keep full-precision KV (stable Qwen instruct). Set MLXSERVE_KV_BITS=4 only if you accept output risk.
+MLXSERVE_KV_BITS="${MLXSERVE_KV_BITS:-}"
 MLXSERVE_QUANTIZED_KV_START="${MLXSERVE_QUANTIZED_KV_START:-32}"
 MLXSERVE_MAX_MEMORY_GB="${MLXSERVE_MAX_MEMORY_GB:-14}"
 MLXSERVE_HARD_MEMORY_GB="${MLXSERVE_HARD_MEMORY_GB:-15}"
@@ -68,6 +69,11 @@ install() {
 
   mkdir -p "${HOME}/Library/LaunchAgents" "${HOME}/Library/Logs"
 
+  KV_ENV_BLOCK=""
+  if [[ -n "${MLXSERVE_KV_BITS}" ]]; then
+    KV_ENV_BLOCK=$'    <key>MLXSERVE_KV_BITS</key><string>'"${MLXSERVE_KV_BITS}"$'</string>\n    <key>MLXSERVE_QUANTIZED_KV_START</key><string>'"${MLXSERVE_QUANTIZED_KV_START}"$'</string>'
+  fi
+
   cat >"$PLIST" <<EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -84,8 +90,7 @@ install() {
     <key>MLXSERVE_RUNTIME_BACKEND</key><string>${MLXSERVE_RUNTIME_BACKEND}</string>
     <key>MLXSERVE_DEFAULT_MODEL</key><string>${MLXSERVE_DEFAULT_MODEL}</string>
     <key>MLXSERVE_PREFILL_STEP_SIZE</key><string>${MLXSERVE_PREFILL_STEP_SIZE}</string>
-    <key>MLXSERVE_KV_BITS</key><string>${MLXSERVE_KV_BITS}</string>
-    <key>MLXSERVE_QUANTIZED_KV_START</key><string>${MLXSERVE_QUANTIZED_KV_START}</string>
+${KV_ENV_BLOCK}
     <key>MLXSERVE_MAX_MEMORY_GB</key><string>${MLXSERVE_MAX_MEMORY_GB}</string>
     <key>MLXSERVE_HARD_MEMORY_GB</key><string>${MLXSERVE_HARD_MEMORY_GB}</string>
     <key>MLXSERVE_IDLE_UNLOAD_ENABLED</key><string>${MLXSERVE_IDLE_UNLOAD_ENABLED}</string>

@@ -134,7 +134,7 @@ Préfixe commun : **`MLXSERVE_`**.
 | `MLXSERVE_CORS_ALLOW_ORIGINS` | Origines CORS, séparées par des virgules | `*` |
 | `MLXSERVE_RATE_LIMIT_PER_MINUTE` | Plafond de requêtes / fenêtre | `120` |
 | `MLXSERVE_PREFILL_STEP_SIZE` | Tuning préfill MLX | `1024` |
-| `MLXSERVE_KV_BITS` | Quantification KV | `4` |
+| `MLXSERVE_KV_BITS` | Quantification KV (`none`/vide = désactivé, stable Qwen instruct) | *(désactivé)* |
 | `MLXSERVE_KV_GROUP_SIZE` | Taille de groupe KV | `64` |
 | `MLXSERVE_QUANTIZED_KV_START` | Début quantification KV | `32` |
 
@@ -254,7 +254,7 @@ for r in stream_generate(
     max_tokens=96,
     sampler=sampler,
     prefill_step_size=1024,
-    kv_bits=4,
+    kv_bits=None,
     kv_group_size=64,
     quantized_kv_start=32,
 ):
