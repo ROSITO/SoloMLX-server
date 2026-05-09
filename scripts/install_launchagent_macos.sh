@@ -9,6 +9,11 @@
 # Uninstall:           ./scripts/install_launchagent_macos.sh uninstall
 #
 # Override repo root:  SOLOMLX_ROOT=/path/to/SoloMLX-server ./scripts/install_launchagent_macos.sh install
+#
+# macOS privacy: a clone under ~/Documents can make LaunchAgent fail with
+#   PermissionError ... .venv/pyvenv.cfg (Operation not permitted).
+# Fix: move the repo outside Documents (e.g. ~/SoloMLX-server or ~/Developer/SoloMLX-server),
+# recreate .venv there, then reinstall with SOLOMLX_ROOT=...
 
 set -euo pipefail
 

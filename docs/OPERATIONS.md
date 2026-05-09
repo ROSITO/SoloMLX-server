@@ -33,6 +33,8 @@ Le terminal n’est plus bloqué : un **LaunchAgent** utilisateur relance MLXSer
 
 **Port** : le script installe par défaut **`MLXSERVE_PORT=8088`** pour éviter le conflit avec un **Docker / front** déjà sur **8080** (ex. SafePerform `deploy-docker-web`). Santé : `curl -s http://127.0.0.1:8088/health`. Pour du 8080 classique : `MLXSERVE_PORT=8080 ./scripts/install_launchagent_macos.sh install` (après avoir libéré le port).
 
+**LaunchAgent + dossier `Documents`** : sur macOS récent, un job `launchd` peut refuser de lire le venv sous **`~/Documents/...`** (`PermissionError` sur `.venv/pyvenv.cfg`). Déplacer le clone hors de `Documents` (ex. `~/SoloMLX-server` ou `~/Developer/SoloMLX-server`), refaire `python3.12 -m venv .venv` + `pip install -e ".[mlx]"` puis `SOLOMLX_ROOT=... ./scripts/install_launchagent_macos.sh install`. Alternative lourde : donner **Accès disque complet** au binaire Python utilisé par le plist (déconseillé).
+
 Depuis la racine du clone, après `pip install -e ".[mlx]"` :
 
 ```bash
