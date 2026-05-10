@@ -33,11 +33,17 @@ python analytics/jobs/build_rag_index.py --days 90
 python analytics/jobs/query_rag.py --question "Quels joueurs ont une charge GPS élevée avec fatigue ?" --top-k 5
 ```
 
-## Q/A avec Ollama (Docker)
+## Q/A avec MLXServe (Docker / hôte)
 
 En stack `deploy-docker/docker-compose*.yml`, le conteneur **`analytics-qa`** enchaîne automatiquement **pipeline → index RAG → uvicorn** au démarrage (volume `safeperform_rag`). Si `ANALYTICS_AUTO_REFRESH=1`, une boucle relance **le même enchaînement** (données + index à jour) tous les `ANALYTICS_REFRESH_SECONDS` (défaut **86400** = 24 h ; réglable, ex. 21600 pour 6 h).
 
-Prérequis : **Ollama** joignable depuis le conteneur (`OLLAMA_BASE_URL`, souvent `http://host.docker.internal:11434`).
+Prérequis : **MLXServe** joignable (API OpenAI-compatible) :
+
+- `MLXSERVE_BASE_URL` — ex. `http://host.docker.internal:8088` depuis un conteneur vers le Mac hôte, ou `http://127.0.0.1:8088` en local.
+- `MLXSERVE_MODEL` — ex. `mlx-community/Qwen2.5-7B-Instruct-4bit` (défaut aligné sur MLXServe).
+- `MLXSERVE_API_KEY` — optionnel, si le serveur impose une clé (`Authorization: Bearer …`).
+
+`MLXSERVE_TIMEOUT_S` remplace l’ancien `OLLAMA_TIMEOUT_S` (toujours lu en secours pour compat).
 
 Debug : `GET http://localhost:8090/health`, `POST http://localhost:8090/qa`.
 

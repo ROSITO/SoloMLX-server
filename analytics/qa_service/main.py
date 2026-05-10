@@ -1,5 +1,5 @@
 """
-Service Q/A : retrieval (index TF-IDF local) + génération Ollama.
+Service Q/A : retrieval (index TF-IDF local) + génération via **MLXServe** (API OpenAI-compatible).
 Les chiffres viennent du contexte récupéré ; le LLM formule la réponse.
 """
 
@@ -18,10 +18,13 @@ from analytics.src.rag.retrieval import query_index
 
 app = FastAPI(title="SafePerform Analytics QA", version="1.0.0")
 
-OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://127.0.0.1:11434").rstrip("/")
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen2.5:latest")
+MLXSERVE_BASE_URL = os.getenv("MLXSERVE_BASE_URL", "http://127.0.0.1:8088").rstrip("/")
+MLXSERVE_MODEL = os.getenv("MLXSERVE_MODEL", "mlx-community/Qwen2.5-7B-Instruct-4bit")
+MLXSERVE_API_KEY = os.getenv("MLXSERVE_API_KEY", "").strip()
+MLXSERVE_TIMEOUT_S = float(
+    os.getenv("MLXSERVE_TIMEOUT_S", os.getenv("OLLAMA_TIMEOUT_S", "120"))
+)
 RAG_INDEX_DIR = os.getenv("RAG_INDEX_DIR", "/data/rag")
-OLLAMA_TIMEOUT_S = float(os.getenv("OLLAMA_TIMEOUT_S", "120"))
 
 
 def _index_files_ready() -> bool:
@@ -44,27 +47,48 @@ class QAResponse(BaseModel):
     answer: str
     model: str
     sources: List[Dict[str, Any]]
-    ollama_ok: bool
+    llm_ok: bool = Field(
+        ...,
+        description="True si MLXServe a répondu ; False si timeout / erreur HTTP (réponse de secours).",
+    )
 
 
-def _ollama_chat(prompt: str) -> tuple[str, bool]:
-    url = f"{OLLAMA_BASE_URL}/api/chat"
-    payload = {
-        "model": OLLAMA_MODEL,
+def _mlxserve_chat(prompt: str) -> tuple[str, bool]:
+    url = f"{MLXSERVE_BASE_URL}/v1/chat/completions"
+    headers = {"Content-Type": "application/json"}
+    if MLXSERVE_API_KEY:
+        headers["Authorization"] = f"Bearer {MLXSERVE_API_KEY}"
+    payload: Dict[str, Any] = {
+        "model": MLXSERVE_MODEL,
         "messages": [{"role": "user", "content": prompt}],
         "stream": False,
+        "max_tokens": 1024,
+        "temperature": 0.2,
+        "top_p": 0.95,
     }
     try:
-        with httpx.Client(timeout=OLLAMA_TIMEOUT_S) as client:
-            r = client.post(url, json=payload)
+        with httpx.Client(timeout=MLXSERVE_TIMEOUT_S) as client:
+            r = client.post(url, json=payload, headers=headers)
             r.raise_for_status()
             data = r.json()
     except Exception as exc:
-        return f"[Ollama indisponible: {exc}] Réponds manuellement à partir des sources ci-dessous.", False
+        return (
+            f"[MLXServe indisponible ({MLXSERVE_BASE_URL}): {exc}] "
+            "Réponds manuellement à partir des sources ci-dessous.",
+            False,
+        )
 
-    msg = data.get("message") or {}
-    content = msg.get("content") or data.get("response") or ""
-    return (content.strip() or "Réponse vide du modèle.", True)
+    err = data.get("error")
+    if err:
+        msg = err.get("message") if isinstance(err, dict) else str(err)
+        return f"[MLXServe erreur API: {msg}] Réponds manuellement à partir des sources ci-dessous.", False
+
+    choices = data.get("choices") or []
+    if not choices:
+        return "Réponse vide (pas de choices dans la réponse MLXServe).", False
+    msg = choices[0].get("message") or {}
+    content = (msg.get("content") or "").strip()
+    return (content or "Réponse vide du modèle.", True)
 
 
 @app.get("/health")
@@ -76,8 +100,9 @@ def health():
         "status": "ok",
         "rag_index_dir": str(idx.resolve()),
         "index_ready": has_index,
-        "ollama_base_url": OLLAMA_BASE_URL,
-        "ollama_model": OLLAMA_MODEL,
+        "mlxserve_base_url": MLXSERVE_BASE_URL,
+        "mlxserve_model": MLXSERVE_MODEL,
+        "mlxserve_api_key_set": bool(MLXSERVE_API_KEY),
     }
 
 
@@ -155,10 +180,10 @@ Contexte:
 
 Question: {body.question}
 """
-    answer, ollama_ok = _ollama_chat(prompt)
+    answer, llm_ok = _mlxserve_chat(prompt)
     return QAResponse(
         answer=answer,
-        model=OLLAMA_MODEL,
+        model=MLXSERVE_MODEL,
         sources=sources,
-        ollama_ok=ollama_ok,
+        llm_ok=llm_ok,
     )
