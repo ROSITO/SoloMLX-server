@@ -96,3 +96,31 @@ def test_snapshot_before_generation_prompt(monkeypatch):
     # Next turn re-renders the reply differently ("R" instead of the generated token 1): the snapshot still hits.
     assert run("helloRnext|G") == len("hello")
     assert model_fed[-1] == [ord(c) for c in "Rnext"]
+
+
+def test_generate_and_stream_run_on_one_mlx_thread_and_stream_errors_surface():
+    """A KV cache reused across requests must stay on the thread that created it (MLX streams are per thread)."""
+    import asyncio
+    import threading
+
+    b = MLXLMBackend()
+    b.model, b.tokenizer, b.model_name = object(), FakeTok(), "m"
+    threads = []
+
+    def fake_sync(prompt, gen_kw):
+        threads.append(threading.get_ident())
+        if prompt == "boom":
+            raise RuntimeError("mlx failure")
+        yield SimpleNamespace(token=1, text="ok")
+
+    b._generate_sync = fake_sync
+
+    async def scenario():
+        assert await b.generate("a", 8) == "ok"
+        assert [c async for c in b.stream("b", 8)] == ["ok"]
+        assert [c async for c in b.stream("c", 8)] == ["ok"]
+        with pytest.raises(RuntimeError, match="mlx failure"):
+            [c async for c in b.stream("boom", 8)]
+
+    asyncio.run(scenario())
+    assert len(set(threads)) == 1 and threads[0] != threading.get_ident()

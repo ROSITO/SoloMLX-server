@@ -32,7 +32,7 @@ from mlxserve.models.schemas import (
     RecommendedModelsResponse,
     Usage,
 )
-from mlxserve.models.catalog import machine_ram_gb, recommended_for_machine
+from mlxserve.models.catalog import machine_ram_gb, model_context_length, recommended_for_machine
 from mlxserve.runtime.stop_sequences import normalize_stop_sequences
 from mlxserve.runtime.tool_calls import extract_tool_calls, partial_marker_len, template_messages
 
@@ -275,7 +275,9 @@ def get_metrics() -> PlainTextResponse:
 @app.get("/v1/models", response_model=ModelsResponse, dependencies=[Depends(require_api_key)])
 def list_models() -> ModelsResponse:
     model_id = engine.loaded_model or settings.default_model
-    return ModelsResponse(data=[ModelItem(id=display_hf_model_id(model_id))])
+    return ModelsResponse(
+        data=[ModelItem(id=display_hf_model_id(model_id), context_length=model_context_length(model_id))]
+    )
 
 
 @app.get("/v1/models/local", response_model=LocalModelsResponse, dependencies=[Depends(require_api_key)])
@@ -364,6 +366,16 @@ async def chat_completions(req: ChatCompletionRequest):
 
     if settings.idle_unload_enabled and guardian.should_unload_idle(engine.last_used_ts):
         engine.unload_model()
+
+    context_length = model_context_length(model)
+    prompt_tokens_in, _ = await engine.prompt_and_completion_token_counts(model, msg_dicts, "", tools)
+    if prompt_tokens_in > context_length:
+        # Fail fast (agents compact on this) instead of grinding through a prefill that cannot fit.
+        raise HTTPException(
+            status_code=400,
+            detail=f"context_length_exceeded: this model's maximum context length is {context_length} tokens, "
+            f"but the prompt has {prompt_tokens_in} tokens.",
+        )
 
     stops = normalize_stop_sequences(req.stop)
     include_usage = bool(req.stream_options and req.stream_options.include_usage)

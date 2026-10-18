@@ -18,6 +18,12 @@ def _build_parser() -> argparse.ArgumentParser:
     rm = sub.add_parser("models-rm")
     rm.add_argument("--model", required=True)
 
+    oc = sub.add_parser(
+        "opencode",
+        help="Launch OpenCode on this server (starts it if needed); extra args go to opencode, --keep-mcp keeps MCP servers",
+    )
+    oc.add_argument("args", nargs=argparse.REMAINDER)
+
     tune = sub.add_parser("autotune")
     tune.add_argument("--model", default="mlx-community/Mistral-7B-Instruct-v0.3-4bit")
     tune.add_argument("--max-tokens", type=int, default=96)
@@ -35,6 +41,11 @@ def main() -> None:
     if args.command in (None, "serve"):
         uvicorn.run(app, host=settings.host, port=settings.port)
         return
+
+    if args.command == "opencode":
+        from mlxserve.opencode import run as run_opencode
+
+        raise SystemExit(run_opencode(args.args))
 
     if args.command == "autotune":
         print(run_autotune_json(model_id=args.model, prompt=args.prompt, max_tokens=args.max_tokens))
