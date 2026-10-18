@@ -34,6 +34,7 @@ from mlxserve.models.schemas import (
 )
 from mlxserve.models.catalog import machine_ram_gb, recommended_for_machine
 from mlxserve.runtime.stop_sequences import normalize_stop_sequences
+from mlxserve.runtime.tool_calls import extract_tool_calls, partial_marker_len, template_messages
 
 logger = logging.getLogger("mlxserve.api")
 
@@ -109,19 +110,24 @@ def _strip_trailing_role_prefix_fragment(text: str) -> str:
     return text
 
 
-_EMPTY_THINK_RE = re.compile(r"^\s*<think>\s*</think>\s*")
+# Empty reasoning blocks emitted with thinking off: Qwen3 `<think></think>`, Gemma 4 `<|channel>thought<channel|>`.
+_EMPTY_THINK_PAIRS = (("<think>", "</think>"), ("<|channel>thought", "<channel|>"))
+_EMPTY_THINK_RE = re.compile(
+    r"^\s*(?:" + "|".join(re.escape(o) + r"\s*" + re.escape(c) for o, c in _EMPTY_THINK_PAIRS) + r")\s*"
+)
 
 
 def _empty_think_skip(text: str) -> int | None:
-    """Chars to skip for a leading empty Qwen3 `<think></think>` block; None = undecided yet (stream)."""
+    """Chars to skip for a leading empty reasoning block; None = undecided yet (stream)."""
     m = _EMPTY_THINK_RE.match(text)
     if m:
         return None if m.end() == len(text) else m.end()
     s = text.lstrip()
-    if "<think>".startswith(s):
-        return None
-    if s.startswith("<think>") and "</think>".startswith(s[len("<think>"):].lstrip()):
-        return None
+    for opener, closer in _EMPTY_THINK_PAIRS:
+        if opener.startswith(s):
+            return None
+        if s.startswith(opener) and closer.startswith(s[len(opener):].lstrip()):
+            return None
     return 0
 
 
@@ -331,7 +337,8 @@ async def chat_completions(req: ChatCompletionRequest):
     metrics.chat_requests_total += 1
     chat_started = time.time()
     model = req.model or settings.default_model
-    msg_dicts = [{"role": m.role, "content": m.content} for m in req.messages]
+    msg_dicts = template_messages(req.messages)
+    tools = req.tools if req.tools and req.tool_choice != "none" else None
     prompt_est = heuristic_prompt_tokens(msg_dicts)
     estimated_gb = admission_memory_gb(
         prompt_est,
@@ -358,11 +365,23 @@ async def chat_completions(req: ChatCompletionRequest):
     completion_id = f"chatcmpl-{uuid.uuid4().hex[:12]}"
     mlabel = _metrics_model_label(model)
 
+    def _chunk(delta: dict) -> str:
+        payload = {
+            "id": completion_id,
+            "object": "chat.completion.chunk",
+            "created": int(time.time()),
+            "model": model,
+            "choices": [{"index": 0, "delta": delta, "finish_reason": None}],
+        }
+        return f"data: {json.dumps(payload)}\n\n"
+
     if req.stream:
         async def event_stream():
             full_text = ""
             emitted_len = 0
             think_skip: int | None = None
+            tool_fmt = None  # resolved after the first chunk (model is loaded by then)
+            tool_at: int | None = None  # index of the first tool-call marker; no content past it
 
             try:
                 # SSE comment: flushes the stream immediately so clients do not sit on 0 bytes
@@ -379,6 +398,7 @@ async def chat_completions(req: ChatCompletionRequest):
                     temperature=req.temperature,
                     top_p=req.top_p,
                     stop_sequences=stops or None,
+                    tools=tools,
                 ):
                     full_text += chunk
                     if think_skip is None:
@@ -387,24 +407,31 @@ async def chat_completions(req: ChatCompletionRequest):
                         if think_skip is None:
                             continue
                         emitted_len = think_skip
-                    delta = full_text[emitted_len:]
-                    if not delta:
-                        continue
-                    emitted_len = len(full_text)
-                    payload = {
-                        "id": completion_id,
-                        "object": "chat.completion.chunk",
-                        "created": int(time.time()),
-                        "model": model,
-                        "choices": [{"index": 0, "delta": {"content": delta}, "finish_reason": None}],
-                    }
-                    yield f"data: {json.dumps(payload)}\n\n"
+                    if tools and tool_fmt is None:
+                        tool_fmt = engine.backend.tool_call_format() or False
+                    limit = len(full_text)
+                    if tool_fmt:
+                        # Content stops at the first tool-call marker; hold back a partial marker.
+                        if tool_at is None and (i := full_text.find(tool_fmt[0], emitted_len)) != -1:
+                            tool_at = i
+                        limit = tool_at if tool_at is not None else limit - partial_marker_len(full_text, tool_fmt[0])
+                    if limit > emitted_len:
+                        yield _chunk({"content": full_text[emitted_len:limit]})
+                        emitted_len = limit
 
-                final_text = _sanitize_completion_text(full_text)
+                tool_calls: list[dict] = []
+                if tool_fmt:
+                    _, tool_calls = extract_tool_calls(full_text[think_skip or 0 :], tool_fmt, tools)
+                    if tool_at is None and emitted_len < len(full_text):
+                        yield _chunk({"content": full_text[emitted_len:]})  # held-back tail was not a marker
+                if tool_calls:
+                    yield _chunk({"tool_calls": [dict(tc, index=n) for n, tc in enumerate(tool_calls)]})
+
+                final_text = full_text if tool_calls else _sanitize_completion_text(full_text)
                 pt_done, ct_done = await engine.prompt_and_completion_token_counts(
-                    model, msg_dicts, final_text
+                    model, msg_dicts, final_text, tools
                 )
-                finish_reason = "length" if ct_done >= req.max_tokens else "stop"
+                finish_reason = "tool_calls" if tool_calls else "length" if ct_done >= req.max_tokens else "stop"
                 final_chunk: dict = {
                     "id": completion_id,
                     "object": "chat.completion.chunk",
@@ -428,7 +455,7 @@ async def chat_completions(req: ChatCompletionRequest):
                 )
                 try:
                     ft = _sanitize_completion_text(full_text)
-                    _, ctk = await engine.prompt_and_completion_token_counts(model, msg_dicts, ft)
+                    _, ctk = await engine.prompt_and_completion_token_counts(model, msg_dicts, ft, tools)
                     metrics.generated_tokens_total += max(0, ctk)
                     metrics.chat_generation_tps = max(0, ctk) / max(1e-6, (time.time() - chat_started))
                 except Exception:
@@ -444,10 +471,15 @@ async def chat_completions(req: ChatCompletionRequest):
         temperature=req.temperature,
         top_p=req.top_p,
         stop_sequences=stops or None,
+        tools=tools,
     )
+    raw_text = text
+    tool_calls: list[dict] = []
+    if tools and (tool_fmt := engine.backend.tool_call_format()):
+        text, tool_calls = extract_tool_calls(text, tool_fmt, tools)
     text = _sanitize_completion_text(text)
     prompt_tokens, completion_tokens = await engine.prompt_and_completion_token_counts(
-        model, msg_dicts, text
+        model, msg_dicts, raw_text if tool_calls else text, tools
     )
     usage = Usage(
         prompt_tokens=max(0, prompt_tokens),
@@ -462,11 +494,12 @@ async def chat_completions(req: ChatCompletionRequest):
         label_zone=settings.metrics_label_chat_by_zone,
         label_model=settings.metrics_label_chat_by_model,
     )
-    finish_reason = "length" if completion_tokens >= req.max_tokens else "stop"
+    finish_reason = "tool_calls" if tool_calls else "length" if completion_tokens >= req.max_tokens else "stop"
+    message = ChoiceMessage(content=text or None, tool_calls=tool_calls) if tool_calls else ChoiceMessage(content=text)
     response = ChatCompletionResponse(
         id=completion_id,
         model=model,
-        choices=[ChatChoice(message=ChoiceMessage(content=text), finish_reason=finish_reason)],
+        choices=[ChatChoice(message=message, finish_reason=finish_reason)],
         usage=usage,
     )
     return response

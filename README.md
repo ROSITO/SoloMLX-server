@@ -202,6 +202,20 @@ curl -s http://127.0.0.1:8080/v1/chat/completions \
   -d '{"messages":[{"role":"user","content":"hi"}],"stream":true,"max_tokens":64}'
 ```
 
+### Appels d’outils (tools / tool_calls)
+
+Format OpenAI : `tools` dans la requête, `tool_calls` + `finish_reason: "tool_calls"` dans la réponse (stream et non-stream), messages `role: "tool"` pour renvoyer les résultats. Le décodage réutilise les parseurs de mlx-lm propres à chaque modèle (Qwen3 JSON, Qwen3.8 XML, Gemma 4…). `tool_choice: "none"` désactive les outils ; `"required"` ou une fonction nommée se comportent comme `"auto"` (non forcé).
+
+```python
+from openai import OpenAI
+c = OpenAI(base_url="http://127.0.0.1:8080/v1", api_key="x")
+tools = [{"type": "function", "function": {"name": "get_weather", "parameters": {
+    "type": "object", "properties": {"city": {"type": "string"}}, "required": ["city"]}}}]
+r = c.chat.completions.create(model="mlx-community/gemma-4-26B-A4B-it-qat-4bit",
+    messages=[{"role": "user", "content": "Météo à Lyon ?"}], tools=tools)
+print(r.choices[0].message.tool_calls)
+```
+
 ### Métriques Prometheus
 
 ```bash

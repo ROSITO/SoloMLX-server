@@ -6,13 +6,14 @@ from typing import Any
 
 from mlxserve.runtime.stop_sequences import merge_chat_boundary_stops, truncate_at_stop_sequences
 from mlxserve.runtime.moe_offload import apply_moe_expert_offload
+from mlxserve.runtime.tool_calls import ToolCallFormat
 
 
 class RuntimeBackend:
     async def load(self, model: str) -> None:
         raise NotImplementedError
 
-    async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
+    async def build_chat_prompt(self, messages: list[dict], tools: list[dict] | None = None) -> str:
         raise NotImplementedError
 
     async def generate(
@@ -38,6 +39,10 @@ class RuntimeBackend:
     async def count_tokens(self, text: str) -> int:
         raise NotImplementedError
 
+    def tool_call_format(self) -> ToolCallFormat | None:
+        """(start, end, parser) for the loaded model, or None when it has no tool calling."""
+        return None
+
     def unload(self) -> None:
         raise NotImplementedError
 
@@ -49,7 +54,7 @@ class StubBackend(RuntimeBackend):
     async def load(self, model: str) -> None:
         self.model = model
 
-    async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
+    async def build_chat_prompt(self, messages: list[dict], tools: list[dict] | None = None) -> str:
         return "\n".join(f"{m['role']}: {m['content']}" for m in messages)
 
     async def generate(
@@ -109,7 +114,7 @@ class ExperimentalMoEStubBackend(RuntimeBackend):
     async def load(self, model: str) -> None:
         self.model = model
 
-    async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
+    async def build_chat_prompt(self, messages: list[dict], tools: list[dict] | None = None) -> str:
         return "\n".join(f"{m['role']}: {m['content']}" for m in messages)
 
     @staticmethod
@@ -252,7 +257,7 @@ class MLXLMBackend(RuntimeBackend):
             )
         return out
 
-    async def build_chat_prompt(self, messages: list[dict[str, str]]) -> str:
+    async def build_chat_prompt(self, messages: list[dict], tools: list[dict] | None = None) -> str:
         if self.tokenizer is None:
             raise RuntimeError("Model is not loaded")
 
@@ -262,6 +267,7 @@ class MLXLMBackend(RuntimeBackend):
                 tokenize=False,
                 add_generation_prompt=True,
                 enable_thinking=self.enable_thinking,  # ignored by templates without it
+                **({"tools": tools} if tools else {}),
             )
 
         if getattr(self.tokenizer, "has_chat_template", False):
@@ -277,6 +283,12 @@ class MLXLMBackend(RuntimeBackend):
             return len(encoded)
 
         return await asyncio.to_thread(_run)
+
+    def tool_call_format(self) -> ToolCallFormat | None:
+        t = self.tokenizer
+        if t is None or not getattr(t, "has_tool_calling", False):
+            return None
+        return t.tool_call_start, t.tool_call_end, t.tool_parser
 
     async def load(self, model: str) -> None:
         if self.model_name == model and self.model is not None and self.tokenizer is not None:

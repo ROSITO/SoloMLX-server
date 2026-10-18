@@ -1,6 +1,6 @@
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 class HealthResponse(BaseModel):
@@ -54,9 +54,32 @@ class PullModelRequest(BaseModel):
     model: str = Field(min_length=3)
 
 
+class ToolCallFunction(BaseModel):
+    name: str
+    arguments: str
+    """JSON-encoded arguments, as in the OpenAI API."""
+
+
+class ToolCall(BaseModel):
+    id: str
+    type: Literal["function"] = "function"
+    function: ToolCallFunction
+
+
 class ChatMessage(BaseModel):
-    role: Literal["system", "user", "assistant"]
-    content: str = Field(min_length=1)
+    role: Literal["system", "user", "assistant", "tool"]
+    content: str | list[dict[str, Any]] | None = None
+    tool_calls: list[ToolCall] | None = None
+    tool_call_id: str | None = None
+    name: str | None = None
+
+    @model_validator(mode="after")
+    def _check_content(self):
+        if isinstance(self.content, list):  # OpenAI content parts: keep text only
+            self.content = "".join(p.get("text", "") for p in self.content if p.get("type") == "text")
+        if not self.content and not (self.role == "assistant" and self.tool_calls):
+            raise ValueError("content is required (assistant may send tool_calls instead)")
+        return self
 
 
 class StreamOptions(BaseModel):
@@ -72,17 +95,21 @@ class ChatCompletionRequest(BaseModel):
     stream: bool = False
     stop: str | list[str] | None = None
     stream_options: StreamOptions | None = None
+    tools: list[dict[str, Any]] | None = None
+    # "none" drops tools; "auto" / "required" / a named function all behave like "auto" (not enforced).
+    tool_choice: str | dict[str, Any] | None = None
 
 
 class ChoiceMessage(BaseModel):
     role: Literal["assistant"] = "assistant"
-    content: str
+    content: str | None
+    tool_calls: list[ToolCall] | None = None
 
 
 class ChatChoice(BaseModel):
     index: int = 0
     message: ChoiceMessage
-    finish_reason: Literal["stop", "length"] = "stop"
+    finish_reason: Literal["stop", "length", "tool_calls"] = "stop"
 
 
 class Usage(BaseModel):
