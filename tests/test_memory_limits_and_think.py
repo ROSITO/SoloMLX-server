@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from mlxserve.api.app import _empty_think_skip, _sanitize_completion_text, app
+from mlxserve.api.app import _sanitize_completion_text, app
 from mlxserve.api.deps import engine
 from mlxserve.config import Settings
 from tests.test_chat_advanced import _relax
@@ -25,24 +25,6 @@ def test_memory_limits_env_override(monkeypatch):
     monkeypatch.setenv("MLXSERVE_HARD_MEMORY_GB", "22")
     s = Settings()
     assert (s.max_memory_gb, s.hard_memory_gb) == (20.0, 22.0)
-
-
-@pytest.mark.parametrize(
-    "text,expected",
-    [
-        ("<th", None),
-        ("<think>\n\n</thi", None),
-        ("<think>\n\n</think>\n\n", None),
-        ("<think>\n\n</think>\n\nHi", 19),
-        ("Hello", 0),
-        ("<b>bold</b>", 0),
-        ("<think>real reasoning", 0),
-        ("<|channel>thought\n<chan", None),
-        ("<|channel>thought\n<channel|>Hi", 28),
-    ],
-)
-def test_empty_think_skip(text, expected):
-    assert _empty_think_skip(text) == expected
 
 
 def test_sanitize_strips_empty_think_only():

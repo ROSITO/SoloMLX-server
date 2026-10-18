@@ -34,6 +34,7 @@ from mlxserve.models.schemas import (
 )
 from mlxserve.models.catalog import machine_ram_gb, model_context_length, recommended_for_machine
 from mlxserve.runtime.stop_sequences import normalize_stop_sequences
+from mlxserve.runtime.reasoning import EmptyReasoningFilter, strip_empty_reasoning
 from mlxserve.runtime.tool_calls import extract_tool_calls, partial_marker_len, template_messages
 
 logger = logging.getLogger("mlxserve.api")
@@ -110,30 +111,9 @@ def _strip_trailing_role_prefix_fragment(text: str) -> str:
     return text
 
 
-# Empty reasoning blocks emitted with thinking off: Qwen3 `<think></think>`, Gemma 4 `<|channel>thought<channel|>`.
-_EMPTY_THINK_PAIRS = (("<think>", "</think>"), ("<|channel>thought", "<channel|>"))
-_EMPTY_THINK_RE = re.compile(
-    r"^\s*(?:" + "|".join(re.escape(o) + r"\s*" + re.escape(c) for o, c in _EMPTY_THINK_PAIRS) + r")\s*"
-)
-
-
-def _empty_think_skip(text: str) -> int | None:
-    """Chars to skip for a leading empty reasoning block; None = undecided yet (stream)."""
-    m = _EMPTY_THINK_RE.match(text)
-    if m:
-        return None if m.end() == len(text) else m.end()
-    s = text.lstrip()
-    for opener, closer in _EMPTY_THINK_PAIRS:
-        if opener.startswith(s):
-            return None
-        if s.startswith(opener) and closer.startswith(s[len(opener):].lstrip()):
-            return None
-    return 0
-
-
 def _sanitize_completion_text(text: str) -> str:
     # Keep ``` fences so clients can render code blocks; strip outer whitespace only.
-    cleaned = _EMPTY_THINK_RE.sub("", text, count=1).strip()
+    cleaned = strip_empty_reasoning(text).strip()
     lowered = cleaned.lower().lstrip()
     cleaned = cleaned.lstrip()
 
@@ -403,7 +383,7 @@ async def chat_completions(req: ChatCompletionRequest):
         async def event_stream():
             full_text = ""
             emitted_len = 0
-            think_skip: int | None = None
+            reasoning = EmptyReasoningFilter()
             tool_fmt = None  # resolved after the first chunk (model is loaded by then)
             tool_at: int | None = None  # index of the first tool-call marker; no content past it
 
@@ -425,12 +405,6 @@ async def chat_completions(req: ChatCompletionRequest):
                     tools=tools,
                 ):
                     full_text += chunk
-                    if think_skip is None:
-                        # Hold deltas until a leading empty <think></think> is ruled out or complete.
-                        think_skip = _empty_think_skip(full_text)
-                        if think_skip is None:
-                            continue
-                        emitted_len = think_skip
                     if tools and tool_fmt is None:
                         tool_fmt = engine.backend.tool_call_format() or False
                     limit = len(full_text)
@@ -440,14 +414,20 @@ async def chat_completions(req: ChatCompletionRequest):
                             tool_at = i
                         limit = tool_at if tool_at is not None else limit - partial_marker_len(full_text, tool_fmt[0])
                     if limit > emitted_len:
-                        yield _chunk({"content": full_text[emitted_len:limit]})
+                        # Empty reasoning blocks are dropped wherever they appear (held back while partial).
+                        if out := reasoning.feed(full_text[emitted_len:limit]):
+                            yield _chunk({"content": out})
                         emitted_len = limit
 
                 tool_calls: list[dict] = []
                 if tool_fmt:
-                    _, tool_calls = extract_tool_calls(full_text[think_skip or 0 :], tool_fmt, tools)
+                    _, tool_calls = extract_tool_calls(full_text, tool_fmt, tools)
                     if tool_at is None and emitted_len < len(full_text):
-                        yield _chunk({"content": full_text[emitted_len:]})  # held-back tail was not a marker
+                        # Held-back tail was not a tool-call marker after all.
+                        if out := reasoning.feed(full_text[emitted_len:]):
+                            yield _chunk({"content": out})
+                if out := reasoning.flush():
+                    yield _chunk({"content": out})
                 if tool_calls:
                     yield _chunk({"tool_calls": [dict(tc, index=n) for n, tc in enumerate(tool_calls)]})
 
