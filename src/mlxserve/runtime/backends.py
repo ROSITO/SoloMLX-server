@@ -2,7 +2,8 @@ import asyncio
 import copy
 import re
 from queue import Queue
-from threading import Lock, Thread
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
 from typing import Any
 
 from mlxserve.runtime.stop_sequences import merge_chat_boundary_stops, truncate_at_stop_sequences
@@ -241,6 +242,9 @@ class MLXLMBackend(RuntimeBackend):
         self.prompt_cache_gb = prompt_cache_gb
         self._prompt_cache: Any = None  # mlx_lm LRUPromptCache, reset on (re)load
         self._prompt_cache_lock = Lock()
+        # All MLX work runs on this one thread: arrays (e.g. a reused KV cache) are bound to the GPU
+        # stream of the thread that created them, and MLX runs one generation at a time anyway.
+        self._mlx_thread = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx")
         self._gen_suffix: str | None = None  # chat template's generation prompt, per loaded model
         self.last_cached_tokens = 0
 
@@ -304,7 +308,7 @@ class MLXLMBackend(RuntimeBackend):
             from mlx_lm import load as mlx_load
         except Exception as exc:
             raise RuntimeError("mlx-lm is not installed or failed to import") from exc
-        self.model, self.tokenizer = await asyncio.to_thread(mlx_load, model)
+        self.model, self.tokenizer = await self._on_mlx_thread(lambda: mlx_load(model))
         self._prompt_cache = None
         self._gen_suffix = None
         if self.prompt_cache_gb > 0:
@@ -336,12 +340,17 @@ class MLXLMBackend(RuntimeBackend):
                 self._gen_suffix = ""
         return self._gen_suffix
 
+    async def _on_mlx_thread(self, fn):
+        return await asyncio.get_running_loop().run_in_executor(self._mlx_thread, fn)
+
     def _prefill(self, tokens: list[int], cache: list[Any], step: int) -> None:
         import mlx.core as mx
+        from mlx_lm.generate import generation_stream
 
-        for i in range(0, len(tokens), step):
-            self.model(mx.array(tokens[i : i + step])[None], cache=cache)
-            mx.eval([c.state for c in cache])
+        with mx.stream(generation_stream):  # same stream stream_generate uses for this cache
+            for i in range(0, len(tokens), step):
+                self.model(mx.array(tokens[i : i + step])[None], cache=cache)
+                mx.eval([c.state for c in cache])
 
     def _generate_sync(self, prompt: str, gen_kw: dict[str, Any]):
         """stream_generate, resuming from the cached KV of the longest known token prefix.
@@ -393,7 +402,7 @@ class MLXLMBackend(RuntimeBackend):
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("Model is not loaded")
         gen_kw = self._mlx_sample_and_logits_kwargs(max_tokens, temperature, top_p)
-        raw = await asyncio.to_thread(lambda: "".join(r.text for r in self._generate_sync(prompt, gen_kw)))
+        raw = await self._on_mlx_thread(lambda: "".join(r.text for r in self._generate_sync(prompt, gen_kw)))
         merged = merge_chat_boundary_stops(self.model_name, stop_sequences)
         trimmed, _ = truncate_at_stop_sequences(raw, merged)
         return trimmed
@@ -411,21 +420,25 @@ class MLXLMBackend(RuntimeBackend):
         merged_stops = merge_chat_boundary_stops(self.model_name, stop_sequences)
         gen_kw = self._mlx_sample_and_logits_kwargs(max_tokens, temperature, top_p)
 
-        q: Queue[str | None] = Queue()
+        q: Queue[str | BaseException | None] = Queue()
 
         def worker() -> None:
             try:
                 for item in self._generate_sync(prompt, gen_kw):
                     if item.text:
                         q.put(item.text)
+            except BaseException as exc:  # surface it: an empty 200 makes agents loop on "continue"
+                q.put(exc)
             finally:
                 q.put(None)
 
-        Thread(target=worker, daemon=True).start()
+        self._mlx_thread.submit(worker)
         assembled = ""
         emitted_upto = 0
         while True:
             piece = await asyncio.to_thread(q.get)
+            if isinstance(piece, BaseException):
+                raise piece
             if piece is None:
                 trimmed, _ = truncate_at_stop_sequences(assembled, merged_stops)
                 tail = trimmed[emitted_upto:]

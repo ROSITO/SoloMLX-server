@@ -18,6 +18,7 @@ class ModelItem(BaseModel):
     id: str
     object: Literal["model"] = "model"
     owned_by: str = "mlxserve"
+    context_length: int | None = None
 
 
 class ModelsResponse(BaseModel):

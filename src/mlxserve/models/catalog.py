@@ -1,4 +1,6 @@
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 import psutil
 
@@ -103,6 +105,27 @@ CATALOG: list[RecommendedModel] = [
         notes="Lowest memory footprint, useful under pressure.",
     ),
 ]
+
+
+def model_context_length(model_id: str) -> int:
+    """Context window to advertise: min(settings.context_tokens, the model's max_position_embeddings)."""
+    from mlxserve.config import settings
+
+    cfg_path = Path(model_id) / "config.json"
+    if not cfg_path.exists():
+        try:
+            from huggingface_hub import try_to_load_from_cache
+
+            hit = try_to_load_from_cache(model_id, "config.json")
+            cfg_path = Path(hit) if isinstance(hit, str) else None
+        except Exception:
+            cfg_path = None
+    try:
+        cfg = json.loads(cfg_path.read_text()) if cfg_path else {}
+    except Exception:
+        cfg = {}
+    native = cfg.get("max_position_embeddings") or cfg.get("text_config", {}).get("max_position_embeddings")
+    return min(settings.context_tokens, native) if native else settings.context_tokens
 
 
 def machine_ram_gb() -> float:
