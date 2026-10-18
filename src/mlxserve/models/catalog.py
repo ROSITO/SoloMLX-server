@@ -15,6 +15,22 @@ class RecommendedModel:
 
 CATALOG: list[RecommendedModel] = [
     RecommendedModel(
+        id="mlx-community/gemma-4-26B-A4B-it-qat-4bit",
+        label="Gemma 4 26B-A4B IT QAT Q4 (MoE)",
+        ram_min_gb=32,
+        ram_max_gb=64,
+        context="Best speed/quality on 32-64 GB: chat, code, long context",
+        notes="~14.5 GiB weights. 36 GB Mac (thinking off): 41-68 tok/s decode, ~430 tok/s prefill, peak 16 GB at 17k-token prompt.",
+    ),
+    RecommendedModel(
+        id="mlx-community/Qwen3.8-27B-4bit",
+        label="Qwen3.8 27B Q4",
+        ram_min_gb=32,
+        ram_max_gb=64,
+        context="Dense 27B: careful reasoning, slower decode",
+        notes="~15 GiB weights. 36 GB Mac (thinking off): ~7.5 tok/s decode, ~75 tok/s prefill, peak 18.9 GB at 17k-token prompt.",
+    ),
+    RecommendedModel(
         id="mlx-community/Qwen3-30B-A3B-Instruct-2507-4bit",
         label="Qwen3 30B-A3B Instruct 2507 Q4 (MoE)",
         ram_min_gb=32,

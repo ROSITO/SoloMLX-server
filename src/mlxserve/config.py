@@ -47,6 +47,9 @@ class Settings(BaseSettings):
     # Enable e.g. MLXSERVE_GENERATION_REPETITION_PENALTY=1.08 when needed.
     generation_repetition_penalty: float = 1.0
     generation_repetition_context_size: int = 64
+    # Reasoning models (Qwen3, Qwen3.8, Gemma 4): passed as enable_thinking to the chat template.
+    # Off by default: reasoning would land in the reply text. MLXSERVE_ENABLE_THINKING=true to re-enable.
+    enable_thinking: bool = False
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
 

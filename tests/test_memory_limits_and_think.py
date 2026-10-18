@@ -70,3 +70,29 @@ def test_stream_hides_empty_think():
         if line.startswith("data: {")
     ]
     assert "".join(deltas) == "17*23 = 391."
+
+
+@pytest.mark.parametrize("enabled", [False, True])
+def test_build_chat_prompt_passes_enable_thinking(enabled):
+    import asyncio
+
+    from mlxserve.runtime.backends import MLXLMBackend
+
+    seen = {}
+
+    class Tok:
+        has_chat_template = True
+
+        def apply_chat_template(self, messages, **kw):
+            seen.update(kw)
+            return "prompt"
+
+    b = MLXLMBackend(enable_thinking=enabled)
+    b.tokenizer = Tok()
+    assert asyncio.run(b.build_chat_prompt([{"role": "user", "content": "hi"}])) == "prompt"
+    assert seen["enable_thinking"] is enabled
+
+
+def test_enable_thinking_default_off(monkeypatch):
+    monkeypatch.delenv("MLXSERVE_ENABLE_THINKING", raising=False)
+    assert Settings().enable_thinking is False
