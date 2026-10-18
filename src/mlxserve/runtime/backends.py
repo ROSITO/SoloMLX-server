@@ -247,6 +247,8 @@ class MLXLMBackend(RuntimeBackend):
         self._mlx_thread = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx")
         self._gen_suffix: str | None = None  # chat template's generation prompt, per loaded model
         self.last_cached_tokens = 0
+        # (bytes/token of growing layers, [(bytes/token, window)] of sliding layers, fixed bytes); set on load
+        self._kv_profile: tuple[int, list[tuple[int, int]], int] | None = None
 
     def _mlx_sample_and_logits_kwargs(
         self, max_tokens: int, temperature: float, top_p: float
@@ -309,6 +311,7 @@ class MLXLMBackend(RuntimeBackend):
         except Exception as exc:
             raise RuntimeError("mlx-lm is not installed or failed to import") from exc
         self.model, self.tokenizer = await self._on_mlx_thread(lambda: mlx_load(model))
+        self._kv_profile = await self._on_mlx_thread(self._measure_kv_profile)
         self._prompt_cache = None
         self._gen_suffix = None
         if self.prompt_cache_gb > 0:
@@ -339,6 +342,38 @@ class MLXLMBackend(RuntimeBackend):
             except Exception:
                 self._gen_suffix = ""
         return self._gen_suffix
+
+    def _measure_kv_profile(self) -> tuple[int, list[tuple[int, int]], int] | None:
+        """Real KV cost of this model, read from its cache layout after a 1-token forward."""
+        try:
+            from mlx_lm.models.cache import make_prompt_cache
+
+            cache = make_prompt_cache(self.model)
+            self._prefill([0], cache, 1)
+            grow, sliding, fixed = 0, [], 0
+            for c in cache:
+                keys = getattr(c, "keys", None)
+                if keys is None or not hasattr(keys, "shape"):
+                    fixed += c.nbytes  # e.g. linear-attention state: constant size
+                    continue
+                per_token = 2 * keys.shape[1] * keys.shape[3] * keys.dtype.size  # K + V
+                window = getattr(c, "max_size", None)
+                if window:
+                    sliding.append((per_token, window))
+                else:
+                    grow += per_token
+            return grow, sliding, fixed
+        except Exception:
+            return None
+
+    def kv_gb_estimate(self, seq_len: int) -> float | None:
+        """KV cache GB for seq_len tokens with the loaded model, or None if unknown (not loaded)."""
+        if self._kv_profile is None:
+            return None
+        grow, sliding, fixed = self._kv_profile
+        # A sliding layer holds its window plus the chunk being prefilled.
+        held = lambda w: min(seq_len, w + self.prefill_step_size)  # noqa: E731
+        return (grow * seq_len + sum(b * held(w) for b, w in sliding) + fixed) / 1e9
 
     async def _on_mlx_thread(self, fn):
         return await asyncio.get_running_loop().run_in_executor(self._mlx_thread, fn)
@@ -463,3 +498,4 @@ class MLXLMBackend(RuntimeBackend):
         self.tokenizer = None
         self.model_name = None
         self._prompt_cache = None
+        self._kv_profile = None

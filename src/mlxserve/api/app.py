@@ -334,6 +334,12 @@ def list_recommended_models() -> RecommendedModelsResponse:
     return RecommendedModelsResponse(machine_ram_gb=ram_gb, data=data)
 
 
+def _loaded_kv_gb(model: str, seq_len: int) -> float | None:
+    """Real KV size for the already-loaded model (None: fall back to the generic bound)."""
+    estimate = getattr(engine.backend, "kv_gb_estimate", None)
+    return estimate(seq_len) if estimate and engine.loaded_model == model else None
+
+
 def _cached_tokens_details() -> dict[str, int] | None:
     n = getattr(engine.backend, "last_cached_tokens", None)
     return None if n is None else {"cached_tokens": n}
@@ -358,6 +364,7 @@ async def chat_completions(req: ChatCompletionRequest):
         kv_heads=settings.memory_admission_kv_heads,
         kv_head_dim=settings.memory_admission_kv_head_dim,
         kv_bytes_per_element=settings.memory_admission_kv_bytes_per_element,
+        kv_gb=_loaded_kv_gb(model, prompt_est + req.max_tokens),
     )
     zone, deny_reason = guardian.classify_detail(estimated_request_gb=estimated_gb)
     if zone == "red":
