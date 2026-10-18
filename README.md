@@ -116,6 +116,7 @@ Préfixe commun : **`MLXSERVE_`**.
 | `MLXSERVE_HARD_MEMORY_GB` | Limite « hard » (Go) | 15/16 de la RAM (`15.0` sur 16 Go) |
 | `MLXSERVE_ENABLE_THINKING` | `true` : laisse raisonner les modèles qui le supportent (Qwen3, Qwen3.8, Gemma 4) ; le raisonnement apparaît alors dans la réponse | `false` |
 | `MLXSERVE_PROMPT_CACHE_GB` | Cache KV réutilisé entre les tours (plus long préfixe de tokens commun) : seule la fin de la conversation est recalculée. Taille max gardée en mémoire ; `0` = désactivé. `usage.prompt_tokens_details.cached_tokens` indique les tokens servis depuis le cache | `4.0` |
+| `MLXSERVE_MAX_OUTPUT_TOKENS` | Plafond de `max_tokens` : une demande plus grande est ramenée à cette valeur au lieu d’être rejetée | `8192` |
 | `MLXSERVE_IDLE_UNLOAD_MINUTES` | Décharge du modèle après inactivité | `15` |
 | `MLXSERVE_IDLE_UNLOAD_ENABLED` | `true` / `false` : activer la décharge idle | `true` |
 | `MLXSERVE_PRELOAD_DEFAULT_MODEL` | Si `true`, charge `MLXSERVE_DEFAULT_MODEL` au démarrage (évite le cold-start sur la 1ʳᵉ requête ; démarre plus lentement) | `false` |
@@ -216,6 +217,32 @@ r = c.chat.completions.create(model="mlx-community/gemma-4-26B-A4B-it-qat-4bit",
     messages=[{"role": "user", "content": "Météo à Lyon ?"}], tools=tools)
 print(r.choices[0].message.tool_calls)
 ```
+
+### Agent de code : OpenCode
+
+Testé avec OpenCode 1.17 + Gemma 4 26B-A4B : correction d’un module Python jusqu’au vert des tests, en ~80 s. `opencode.json` à la racine du projet :
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "mlxserve": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "MLXServe (local)",
+      "options": { "baseURL": "http://127.0.0.1:8080/v1", "apiKey": "local" },
+      "models": {
+        "mlx-community/gemma-4-26B-A4B-it-qat-4bit": {
+          "name": "Gemma 4 26B-A4B", "tool_call": true,
+          "limit": { "context": 65536, "output": 8192 }
+        }
+      }
+    }
+  },
+  "model": "mlxserve/mlx-community/gemma-4-26B-A4B-it-qat-4bit"
+}
+```
+
+L’id du modèle doit être celui de `GET /v1/models`. En script, lancer `opencode run "…" < /dev/null` (sinon il attend l’entrée standard). Codex CLI n’est pas compatible : il exige la Responses API.
 
 ### Métriques Prometheus
 

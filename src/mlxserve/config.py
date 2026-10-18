@@ -52,6 +52,8 @@ class Settings(BaseSettings):
     enable_thinking: bool = False
     # KV cache reused across turns (longest shared token prefix). Max GB kept between requests; 0 = off.
     prompt_cache_gb: float = 4.0
+    # Requests asking for more (agent harnesses send 8k-32k) are clamped, not rejected.
+    max_output_tokens: int = 8192
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
 

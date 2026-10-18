@@ -119,3 +119,11 @@ def test_stream_held_back_tail_is_flushed(backend_with):
     chunks = _post({"tools": TOOLS}, stream=True)
     assert "".join(c["choices"][0]["delta"].get("content", "") for c in chunks) == "a <"
     assert chunks[-1]["choices"][0]["finish_reason"] == "stop"
+
+
+def test_max_tokens_clamped_not_rejected():
+    from mlxserve.config import settings
+    from mlxserve.models.schemas import ChatCompletionRequest
+
+    req = ChatCompletionRequest(messages=[{"role": "user", "content": "x"}], max_tokens=32_000)
+    assert req.max_tokens == settings.max_output_tokens
