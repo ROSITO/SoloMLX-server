@@ -216,6 +216,7 @@ class MLXLMBackend(RuntimeBackend):
         moe_single_expert_fastpath: bool = True,
         repetition_penalty: float = 1.0,
         repetition_context_size: int = 64,
+        enable_thinking: bool = False,
     ) -> None:
         self.model_name: str | None = None
         self.model: Any = None
@@ -229,6 +230,7 @@ class MLXLMBackend(RuntimeBackend):
         self.moe_single_expert_fastpath = moe_single_expert_fastpath
         self.repetition_penalty = repetition_penalty
         self.repetition_context_size = repetition_context_size
+        self.enable_thinking = enable_thinking
 
     def _mlx_sample_and_logits_kwargs(
         self, max_tokens: int, temperature: float, top_p: float
@@ -259,6 +261,7 @@ class MLXLMBackend(RuntimeBackend):
                 messages,
                 tokenize=False,
                 add_generation_prompt=True,
+                enable_thinking=self.enable_thinking,  # ignored by templates without it
             )
 
         if getattr(self.tokenizer, "has_chat_template", False):

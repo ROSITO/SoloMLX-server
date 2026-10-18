@@ -109,9 +109,25 @@ def _strip_trailing_role_prefix_fragment(text: str) -> str:
     return text
 
 
+_EMPTY_THINK_RE = re.compile(r"^\s*<think>\s*</think>\s*")
+
+
+def _empty_think_skip(text: str) -> int | None:
+    """Chars to skip for a leading empty Qwen3 `<think></think>` block; None = undecided yet (stream)."""
+    m = _EMPTY_THINK_RE.match(text)
+    if m:
+        return None if m.end() == len(text) else m.end()
+    s = text.lstrip()
+    if "<think>".startswith(s):
+        return None
+    if s.startswith("<think>") and "</think>".startswith(s[len("<think>"):].lstrip()):
+        return None
+    return 0
+
+
 def _sanitize_completion_text(text: str) -> str:
     # Keep ``` fences so clients can render code blocks; strip outer whitespace only.
-    cleaned = text.strip()
+    cleaned = _EMPTY_THINK_RE.sub("", text, count=1).strip()
     lowered = cleaned.lower().lstrip()
     cleaned = cleaned.lstrip()
 
@@ -346,6 +362,7 @@ async def chat_completions(req: ChatCompletionRequest):
         async def event_stream():
             full_text = ""
             emitted_len = 0
+            think_skip: int | None = None
 
             try:
                 # SSE comment: flushes the stream immediately so clients do not sit on 0 bytes
@@ -364,6 +381,12 @@ async def chat_completions(req: ChatCompletionRequest):
                     stop_sequences=stops or None,
                 ):
                     full_text += chunk
+                    if think_skip is None:
+                        # Hold deltas until a leading empty <think></think> is ruled out or complete.
+                        think_skip = _empty_think_skip(full_text)
+                        if think_skip is None:
+                            continue
+                        emitted_len = think_skip
                     delta = full_text[emitted_len:]
                     if not delta:
                         continue

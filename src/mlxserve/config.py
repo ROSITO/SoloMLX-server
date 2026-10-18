@@ -1,4 +1,5 @@
-from pydantic import field_validator
+import psutil
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -8,8 +9,9 @@ class Settings(BaseSettings):
     api_key: str = ""
     jwt_hs256_secret: str = ""
     jwt_audience: str = ""
-    max_memory_gb: float = 14.0
-    hard_memory_gb: float = 15.0
+    # None = scaled to machine RAM (14 / 15 GB on a 16 GB Mac). Compared to system-wide used RAM.
+    max_memory_gb: float | None = None
+    hard_memory_gb: float | None = None
     idle_unload_minutes: int = 15
     idle_unload_enabled: bool = True
     preload_default_model: bool = False
@@ -45,6 +47,9 @@ class Settings(BaseSettings):
     # Enable e.g. MLXSERVE_GENERATION_REPETITION_PENALTY=1.08 when needed.
     generation_repetition_penalty: float = 1.0
     generation_repetition_context_size: int = 64
+    # Reasoning models (Qwen3, Qwen3.8, Gemma 4): passed as enable_thinking to the chat template.
+    # Off by default: reasoning would land in the reply text. MLXSERVE_ENABLE_THINKING=true to re-enable.
+    enable_thinking: bool = False
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
 
@@ -60,6 +65,15 @@ class Settings(BaseSettings):
             v = int(s)
         i = int(v)
         return None if i <= 0 else i
+
+    @model_validator(mode="after")
+    def _default_memory_limits(self):
+        total_gb = psutil.virtual_memory().total / (1024**3)
+        if self.max_memory_gb is None:
+            self.max_memory_gb = round(total_gb * 14 / 16, 1)
+        if self.hard_memory_gb is None:
+            self.hard_memory_gb = round(total_gb * 15 / 16, 1)
+        return self
 
 
 settings = Settings()
