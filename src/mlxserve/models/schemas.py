@@ -1,6 +1,8 @@
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
+
+from mlxserve.config import settings
 
 
 class HealthResponse(BaseModel):
@@ -91,13 +93,18 @@ class ChatCompletionRequest(BaseModel):
     messages: list[ChatMessage] = Field(min_length=1)
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     top_p: float = Field(default=1.0, ge=0.0, le=1.0)
-    max_tokens: int = Field(default=256, gt=0, le=4096)
+    max_tokens: int = Field(default=256, gt=0)
     stream: bool = False
     stop: str | list[str] | None = None
     stream_options: StreamOptions | None = None
     tools: list[dict[str, Any]] | None = None
     # "none" drops tools; "auto" / "required" / a named function all behave like "auto" (not enforced).
     tool_choice: str | dict[str, Any] | None = None
+
+    @field_validator("max_tokens")
+    @classmethod
+    def _clamp_max_tokens(cls, v: int) -> int:
+        return min(v, settings.max_output_tokens)
 
 
 class ChoiceMessage(BaseModel):
