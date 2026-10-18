@@ -40,6 +40,9 @@ class InferenceEngine:
                 repetition_context_size=settings.generation_repetition_context_size,
                 enable_thinking=settings.enable_thinking,
                 prompt_cache_gb=settings.prompt_cache_gb,
+                mtp=settings.mtp,
+                mtp_draft_model=settings.mtp_draft_model,
+                mtp_max_draft=settings.mtp_max_draft,
             )
         if mode == "auto":
             try:
@@ -56,6 +59,9 @@ class InferenceEngine:
                     repetition_context_size=settings.generation_repetition_context_size,
                     enable_thinking=settings.enable_thinking,
                     prompt_cache_gb=settings.prompt_cache_gb,
+                    mtp=settings.mtp,
+                    mtp_draft_model=settings.mtp_draft_model,
+                    mtp_max_draft=settings.mtp_max_draft,
                 )
             except Exception:
                 return StubBackend()

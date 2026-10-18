@@ -124,3 +124,21 @@ def test_generate_and_stream_run_on_one_mlx_thread_and_stream_errors_surface():
 
     asyncio.run(scenario())
     assert len(set(threads)) == 1 and threads[0] != threading.get_ident()
+
+
+def test_reused_entry_is_refreshed_in_the_lru(monkeypatch):
+    """The agent's history snapshot is reused every turn: it must not be the first one evicted."""
+    monkeypatch.setattr(mlx_lm, "stream_generate", lambda model, tok, prompt, prompt_cache, **kw: iter([SimpleNamespace(token=1, text="x")]))
+    monkeypatch.setattr(mlx_cache, "make_prompt_cache", lambda model: [FakeCache()])
+    b = MLXLMBackend(prompt_cache_gb=1)
+    b.model, b.tokenizer, b.model_name = object(), FakeTok(), "m"
+    b._prompt_cache = mlx_cache.LRUPromptCache(max_size=2)
+
+    def run(prompt):
+        "".join(r.text for r in b._generate_sync(prompt, {}))
+        return b.last_cached_tokens
+
+    run("history")                     # stores "history" + generated
+    assert run("history\x01A") == 8    # reuses it (and refreshes it)
+    run("other")                       # a third entry: the LRU (size 2) evicts the least recent one
+    assert run("history\x01B") == 8    # the reused history survived

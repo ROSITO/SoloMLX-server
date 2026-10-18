@@ -57,6 +57,11 @@ class Settings(BaseSettings):
     # Context window advertised to clients (/v1/models context_length, `mlxserve opencode`):
     # min(this, the model's max_position_embeddings).
     context_tokens: int = 131072
+    # Gemma 4 multi-token prediction with Google's assistant drafter (downloaded on first load, ~225 MB).
+    # Opt-in. Draft model: MLXSERVE_MTP_DRAFT_MODEL, or the "-assistant" twin of the served model.
+    mtp: bool = False
+    mtp_draft_model: str = ""
+    mtp_max_draft: int = 2  # best of 1-3 on chat/code/agent prompts (MoE: each extra verified token costs ~8 ms)
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
 

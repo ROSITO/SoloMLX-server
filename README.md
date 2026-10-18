@@ -118,6 +118,9 @@ Préfixe commun : **`MLXSERVE_`**.
 | `MLXSERVE_PROMPT_CACHE_GB` | Cache KV réutilisé entre les tours (plus long préfixe de tokens commun) : seule la fin de la conversation est recalculée. Taille max gardée en mémoire ; `0` = désactivé. `usage.prompt_tokens_details.cached_tokens` indique les tokens servis depuis le cache | `4.0` |
 | `MLXSERVE_MAX_OUTPUT_TOKENS` | Plafond de `max_tokens` : une demande plus grande est ramenée à cette valeur au lieu d’être rejetée | `8192` |
 | `MLXSERVE_CONTEXT_TOKENS` | Fenêtre de contexte annoncée (`/v1/models` → `context_length`, utilisée par `mlxserve opencode`) : min(cette valeur, contexte natif du modèle). Gemma 4 26B-A4B : ~0,02 Go de KV par millier de tokens, 128k tiennent dans 36 Go | `131072` |
+| `MLXSERVE_MTP` | `true` : décodage spéculatif Gemma 4 avec le modèle « assistant » de Google (MTP), télécharge ~225 Mo au premier chargement. Génération ×1,1 à ×1,3 sur Gemma 4 26B-A4B, même distribution de sortie. Ignoré pour les autres modèles, avec `MLXSERVE_KV_BITS` ou une pénalité de répétition | `false` |
+| `MLXSERVE_MTP_DRAFT_MODEL` | Modèle brouillon (par défaut : le jumeau `-assistant` du modèle servi) | *(vide)* |
+| `MLXSERVE_MTP_MAX_DRAFT` | Tokens proposés par cycle au maximum | `2` |
 | `MLXSERVE_IDLE_UNLOAD_MINUTES` | Décharge du modèle après inactivité | `15` |
 | `MLXSERVE_IDLE_UNLOAD_ENABLED` | `true` / `false` : activer la décharge idle | `true` |
 | `MLXSERVE_PRELOAD_DEFAULT_MODEL` | Si `true`, charge `MLXSERVE_DEFAULT_MODEL` au démarrage (évite le cold-start sur la 1ʳᵉ requête ; démarre plus lentement) | `false` |
