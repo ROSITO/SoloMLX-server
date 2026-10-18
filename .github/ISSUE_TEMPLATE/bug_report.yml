@@ -1,0 +1,69 @@
+name: Bug report
+description: Something does not work as documented (crash, wrong output, 4xx/5xx, memory, speed regression).
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! English or French is fine.
+        Security problem? Do not open an issue: use the [private report form](https://github.com/ROSITO/SoloMLX-server/security/advisories/new).
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: The smallest request or command that shows the problem (curl, OpenAI SDK snippet, `mlxserve` command...).
+      placeholder: |
+        1. MLXSERVE_DEFAULT_MODEL=... mlxserve serve
+        2. curl http://127.0.0.1:8080/v1/chat/completions -d '{...}'
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: model
+    attributes:
+      label: Model
+      placeholder: mlx-community/gemma-4-26B-A4B-it-qat-4bit
+    validations:
+      required: true
+  - type: input
+    id: mac
+    attributes:
+      label: Mac (chip, RAM) and macOS version
+      placeholder: MacBook Pro M3, 36 GB, macOS 27.0
+    validations:
+      required: true
+  - type: textarea
+    id: versions
+    attributes:
+      label: Versions
+      description: Output of `git rev-parse --short HEAD` and `.venv/bin/python -c "import sys, mlx.core as mx, mlx_lm; print(sys.version.split()[0], mx.__version__, mlx_lm.__version__)"`
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: settings
+    attributes:
+      label: MLXSERVE_* settings
+      description: Non-default environment variables (remove API keys and secrets).
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Server output around the problem (`~/Library/Logs/mlxserve.log` when started by `mlxserve opencode` or the LaunchAgent).
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues.
+          required: true
+        - label: It still happens on the latest `main`.

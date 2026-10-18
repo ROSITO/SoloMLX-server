@@ -22,6 +22,8 @@ Serveur d’inférence **[MLX](https://github.com/ml-explore/mlx)** local pour *
 - [Documentation](#documentation)
 - [Tests](#tests)
 - [Comportement chat / sorties « transcript »](#comportement-chat--sorties-transcript)
+- [Contribuer](#contribuer)
+- [Licence et avertissement](#licence-et-avertissement)
 
 ---
 
@@ -372,6 +374,14 @@ Si le modèle renvoie des tours façon `assistant:` / `user:` ou des bribes type
 
 ---
 
+## Contribuer
+
+Bugs, benchmarks sur d’autres Mac, correctifs et nouveautés sont bienvenus (en français ou en anglais) : voir [CONTRIBUTING.md](CONTRIBUTING.md) et le [code de conduite](CODE_OF_CONDUCT.md). Les failles de sécurité se signalent en privé : [SECURITY.md](SECURITY.md).
+
+---
+
 ## Licence et avertissement
+
+Distribué sous licence [MIT](LICENSE).
 
 Projet orienté **usage local** sur macOS / Apple Silicon. Les réponses des modèles peuvent être incorrectes : vérifiez les sorties critiques (l’UI l’indique également).
