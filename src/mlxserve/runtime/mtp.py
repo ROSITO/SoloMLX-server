@@ -115,11 +115,14 @@ class GemmaMTP:
         self.fed: list[int] = []  # tokens added to the KV cache after the prompt, for the prompt-cache key
         self.stats = {"cycles": 0, "drafted": 0, "accepted": 0}
 
-    def _target(self, tokens: list[int], cache: list[Any]) -> tuple[mx.array, mx.array]:
-        h = self.tm(mx.array(tokens)[None], cache=cache)
+    def _logits(self, h: mx.array) -> mx.array:
         logits = self.tm.embed_tokens.as_linear(h)
         sc = self.lm.final_logit_softcapping
-        return h, (mx.tanh(logits / sc) * sc if sc else logits)
+        return mx.tanh(logits / sc) * sc if sc else logits
+
+    def _target(self, tokens: list[int], cache: list[Any]) -> tuple[mx.array, mx.array]:
+        h = self.tm(mx.array(tokens)[None], cache=cache)
+        return h, self._logits(h)
 
     def _shared_kv(self, cache: list[Any]) -> dict[str, tuple[mx.array, mx.array]]:
         from mlx_lm.models.cache import RotatingKVCache
@@ -157,15 +160,25 @@ class GemmaMTP:
 
         # Same execution context as stream_generate: dedicated GPU stream, weights wired in memory.
         with wired_limit(self.model, [generation_stream]), mx.stream(generation_stream):
-            yield from self._generate(prompt, cache, max_tokens, temperature, top_p, prefill_step)
+            try:
+                yield from self._generate(prompt, cache, max_tokens, temperature, top_p, prefill_step)
+            finally:
+                mx.clear_cache()
 
     def _generate(self, prompt, cache, max_tokens, temperature, top_p, prefill_step):
         self.fed = []
-        for i in range(0, len(prompt), prefill_step):
-            h, logits = self._target(prompt[i : i + prefill_step], cache)
-        last = logits[0, -1]
+        # MLX keeps freed buffers in its own cache; with MTP's varied shapes (vocab-wide probabilities,
+        # (k+1)-token verifies) it grew to 10-13 GB and pushed the system into swapping, stalling the
+        # next request for 20-50 s. Clear it like stream_generate does.
+        mx.clear_cache()
+        chunks = [prompt[i : i + prefill_step] for i in range(0, len(prompt), prefill_step)]
+        for chunk in chunks[:-1]:  # prefill: evaluate the cache chunk by chunk, no logits
+            self.tm(mx.array(chunk)[None], cache=cache)
+            mx.eval([c.state for c in cache])
+            mx.clear_cache()
+        h_last = self.tm(mx.array(chunks[-1])[None], cache=cache)[:, -1:]
+        last = self._logits(h_last)[0, -1]  # logits for the last position only
         y = mx.argmax(last).item() if temperature == 0 else _sample(_probs(last, temperature, top_p))
-        h_last = h[:, -1:]
         pos = cache[self.kv_layer["full_attention"]].offset
         detok = self.tokenizer.detokenizer
         detok.reset()
@@ -190,6 +203,8 @@ class GemmaMTP:
                 m, nxt = accept_sampled(_probs(logits[0], temperature, top_p), qs, drafts, self.eos)
             _rewind(cache, len(drafts) - m)
             self.fed += [y] + drafts[:m]
+            if self.stats["cycles"] % 64 == 63:
+                mx.clear_cache()
             self.stats["cycles"] += 1
             self.stats["drafted"] += len(drafts)
             self.stats["accepted"] += m
