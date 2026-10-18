@@ -116,6 +116,8 @@ class Usage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
+    prompt_tokens_details: dict[str, int] | None = None
+    """OpenAI shape: ``{"cached_tokens": n}`` = prompt tokens served from the reused KV cache."""
 
 
 class ChatCompletionResponse(BaseModel):

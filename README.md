@@ -115,6 +115,7 @@ Préfixe commun : **`MLXSERVE_`**.
 | `MLXSERVE_MAX_MEMORY_GB` | Limite « soft » mémoire (Go, RAM utilisée par tout le système) | 14/16 de la RAM (`14.0` sur 16 Go) |
 | `MLXSERVE_HARD_MEMORY_GB` | Limite « hard » (Go) | 15/16 de la RAM (`15.0` sur 16 Go) |
 | `MLXSERVE_ENABLE_THINKING` | `true` : laisse raisonner les modèles qui le supportent (Qwen3, Qwen3.8, Gemma 4) ; le raisonnement apparaît alors dans la réponse | `false` |
+| `MLXSERVE_PROMPT_CACHE_GB` | Cache KV réutilisé entre les tours (plus long préfixe de tokens commun) : seule la fin de la conversation est recalculée. Taille max gardée en mémoire ; `0` = désactivé. `usage.prompt_tokens_details.cached_tokens` indique les tokens servis depuis le cache | `4.0` |
 | `MLXSERVE_IDLE_UNLOAD_MINUTES` | Décharge du modèle après inactivité | `15` |
 | `MLXSERVE_IDLE_UNLOAD_ENABLED` | `true` / `false` : activer la décharge idle | `true` |
 | `MLXSERVE_PRELOAD_DEFAULT_MODEL` | Si `true`, charge `MLXSERVE_DEFAULT_MODEL` au démarrage (évite le cold-start sur la 1ʳᵉ requête ; démarre plus lentement) | `false` |

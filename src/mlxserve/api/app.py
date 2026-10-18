@@ -332,6 +332,11 @@ def list_recommended_models() -> RecommendedModelsResponse:
     return RecommendedModelsResponse(machine_ram_gb=ram_gb, data=data)
 
 
+def _cached_tokens_details() -> dict[str, int] | None:
+    n = getattr(engine.backend, "last_cached_tokens", None)
+    return None if n is None else {"cached_tokens": n}
+
+
 @app.post("/v1/chat/completions", dependencies=[Depends(require_api_key)])
 async def chat_completions(req: ChatCompletionRequest):
     metrics.chat_requests_total += 1
@@ -444,6 +449,7 @@ async def chat_completions(req: ChatCompletionRequest):
                         "prompt_tokens": max(0, pt_done),
                         "completion_tokens": max(0, ct_done),
                         "total_tokens": max(0, pt_done) + max(0, ct_done),
+                        "prompt_tokens_details": _cached_tokens_details(),
                     }
                 yield f"data: {json.dumps(final_chunk)}\n\n"
             finally:
@@ -485,6 +491,7 @@ async def chat_completions(req: ChatCompletionRequest):
         prompt_tokens=max(0, prompt_tokens),
         completion_tokens=max(0, completion_tokens),
         total_tokens=max(0, prompt_tokens) + max(0, completion_tokens),
+        prompt_tokens_details=_cached_tokens_details(),
     )
     metrics.generated_tokens_total += usage.completion_tokens
     metrics.chat_generation_tps = usage.completion_tokens / max(1e-6, (time.time() - chat_started))
