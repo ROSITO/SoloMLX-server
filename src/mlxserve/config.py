@@ -50,6 +50,8 @@ class Settings(BaseSettings):
     # Reasoning models (Qwen3, Qwen3.8, Gemma 4): passed as enable_thinking to the chat template.
     # Off by default: reasoning would land in the reply text. MLXSERVE_ENABLE_THINKING=true to re-enable.
     enable_thinking: bool = False
+    # KV cache reused across turns (longest shared token prefix). Max GB kept between requests; 0 = off.
+    prompt_cache_gb: float = 4.0
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
 

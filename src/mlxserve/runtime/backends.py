@@ -1,7 +1,8 @@
 import asyncio
+import copy
 import re
 from queue import Queue
-from threading import Thread
+from threading import Lock, Thread
 from typing import Any
 
 from mlxserve.runtime.stop_sequences import merge_chat_boundary_stops, truncate_at_stop_sequences
@@ -222,6 +223,7 @@ class MLXLMBackend(RuntimeBackend):
         repetition_penalty: float = 1.0,
         repetition_context_size: int = 64,
         enable_thinking: bool = False,
+        prompt_cache_gb: float = 0.0,
     ) -> None:
         self.model_name: str | None = None
         self.model: Any = None
@@ -236,6 +238,11 @@ class MLXLMBackend(RuntimeBackend):
         self.repetition_penalty = repetition_penalty
         self.repetition_context_size = repetition_context_size
         self.enable_thinking = enable_thinking
+        self.prompt_cache_gb = prompt_cache_gb
+        self._prompt_cache: Any = None  # mlx_lm LRUPromptCache, reset on (re)load
+        self._prompt_cache_lock = Lock()
+        self._gen_suffix: str | None = None  # chat template's generation prompt, per loaded model
+        self.last_cached_tokens = 0
 
     def _mlx_sample_and_logits_kwargs(
         self, max_tokens: int, temperature: float, top_p: float
@@ -298,6 +305,12 @@ class MLXLMBackend(RuntimeBackend):
         except Exception as exc:
             raise RuntimeError("mlx-lm is not installed or failed to import") from exc
         self.model, self.tokenizer = await asyncio.to_thread(mlx_load, model)
+        self._prompt_cache = None
+        self._gen_suffix = None
+        if self.prompt_cache_gb > 0:
+            from mlx_lm.models.cache import LRUPromptCache
+
+            self._prompt_cache = LRUPromptCache(max_bytes=int(self.prompt_cache_gb * 1e9))
         _ = apply_moe_expert_offload(
             self.model,
             keep_experts=self.moe_resident_experts,
@@ -305,6 +318,69 @@ class MLXLMBackend(RuntimeBackend):
             enable_single_expert_fastpath=self.moe_single_expert_fastpath,
         )
         self.model_name = model
+
+    def _generation_suffix(self) -> str:
+        """Text the template appends for add_generation_prompt (e.g. Gemma 4: model turn opener + empty thought block).
+
+        Templates often render it differently once the reply is in the history, so the KV is only
+        reusable up to just before it.
+        """
+        if self._gen_suffix is None:
+            msgs = [{"role": "user", "content": "x"}]
+            try:
+                kw = {"tokenize": False, "enable_thinking": self.enable_thinking}
+                with_gen = self.tokenizer.apply_chat_template(msgs, add_generation_prompt=True, **kw)
+                without = self.tokenizer.apply_chat_template(msgs, add_generation_prompt=False, **kw)
+                self._gen_suffix = with_gen[len(without) :] if with_gen.startswith(without) else ""
+            except Exception:
+                self._gen_suffix = ""
+        return self._gen_suffix
+
+    def _prefill(self, tokens: list[int], cache: list[Any], step: int) -> None:
+        import mlx.core as mx
+
+        for i in range(0, len(tokens), step):
+            self.model(mx.array(tokens[i : i + step])[None], cache=cache)
+            mx.eval([c.state for c in cache])
+
+    def _generate_sync(self, prompt: str, gen_kw: dict[str, Any]):
+        """stream_generate, resuming from the cached KV of the longest known token prefix.
+
+        Agent loops resend the whole conversation each turn; only the new suffix is prefilled.
+        The cache holds prompt + every yielded token (EOS included), which is the key stored back.
+        """
+        from mlx_lm import stream_generate
+        from mlx_lm.models.cache import make_prompt_cache
+
+        tok = self.tokenizer
+        add_special = tok.bos_token is None or not prompt.startswith(tok.bos_token)
+        tokens = tok.encode(prompt, add_special_tokens=add_special)
+        store = self._prompt_cache
+        cache, rest = None, tokens
+        if store is not None:
+            with self._prompt_cache_lock:
+                cache, rest = store.fetch_nearest_cache(self.model_name, tokens)
+            if cache is None or not rest:
+                cache, rest = make_prompt_cache(self.model), tokens
+        self.last_cached_tokens = len(tokens) - len(rest)
+        suffix = self._generation_suffix() if store is not None else ""
+        if suffix and prompt.endswith(suffix):
+            # Snapshot the KV at the end of the stable part (history, before the generation prompt):
+            # the next turn starts with exactly these tokens even when the reply is re-rendered.
+            stable = tok.encode(prompt[: -len(suffix)], add_special_tokens=add_special)
+            start = len(tokens) - len(rest)
+            if len(stable) > start and tokens[: len(stable)] == stable:
+                self._prefill(tokens[start : len(stable)], cache, gen_kw.get("prefill_step_size") or 2048)
+                with self._prompt_cache_lock:
+                    store.insert_cache(self.model_name, stable, copy.deepcopy(cache))
+                rest = tokens[len(stable) :]
+        generated: list[int] = []
+        for item in stream_generate(self.model, tok, prompt=rest, prompt_cache=cache, **gen_kw):
+            generated.append(item.token)
+            yield item
+        if store is not None:
+            with self._prompt_cache_lock:
+                store.insert_cache(self.model_name, tokens + generated, cache)
 
     async def generate(
         self,
@@ -316,17 +392,8 @@ class MLXLMBackend(RuntimeBackend):
     ) -> str:
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("Model is not loaded")
-        from mlx_lm import generate as mlx_generate
-
         gen_kw = self._mlx_sample_and_logits_kwargs(max_tokens, temperature, top_p)
-        raw = await asyncio.to_thread(
-            mlx_generate,
-            self.model,
-            self.tokenizer,
-            prompt=prompt,
-            verbose=False,
-            **gen_kw,
-        )
+        raw = await asyncio.to_thread(lambda: "".join(r.text for r in self._generate_sync(prompt, gen_kw)))
         merged = merge_chat_boundary_stops(self.model_name, stop_sequences)
         trimmed, _ = truncate_at_stop_sequences(raw, merged)
         return trimmed
@@ -341,8 +408,6 @@ class MLXLMBackend(RuntimeBackend):
     ):
         if self.model is None or self.tokenizer is None:
             raise RuntimeError("Model is not loaded")
-        from mlx_lm import stream_generate
-
         merged_stops = merge_chat_boundary_stops(self.model_name, stop_sequences)
         gen_kw = self._mlx_sample_and_logits_kwargs(max_tokens, temperature, top_p)
 
@@ -350,12 +415,7 @@ class MLXLMBackend(RuntimeBackend):
 
         def worker() -> None:
             try:
-                for item in stream_generate(
-                    self.model,
-                    self.tokenizer,
-                    prompt=prompt,
-                    **gen_kw,
-                ):
+                for item in self._generate_sync(prompt, gen_kw):
                     if item.text:
                         q.put(item.text)
             finally:
@@ -389,3 +449,4 @@ class MLXLMBackend(RuntimeBackend):
         self.model = None
         self.tokenizer = None
         self.model_name = None
+        self._prompt_cache = None
