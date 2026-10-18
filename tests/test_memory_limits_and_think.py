@@ -37,6 +37,8 @@ def test_memory_limits_env_override(monkeypatch):
         ("Hello", 0),
         ("<b>bold</b>", 0),
         ("<think>real reasoning", 0),
+        ("<|channel>thought\n<chan", None),
+        ("<|channel>thought\n<channel|>Hi", 28),
     ],
 )
 def test_empty_think_skip(text, expected):
@@ -46,6 +48,7 @@ def test_empty_think_skip(text, expected):
 def test_sanitize_strips_empty_think_only():
     assert _sanitize_completion_text("<think>\n\n</think>\n\n391.") == "391."
     assert _sanitize_completion_text("<think>x</think>391.") == "<think>x</think>391."
+    assert _sanitize_completion_text("<|channel>thought\n<channel|>À Lyon, 17°C.") == "À Lyon, 17°C."
 
 
 def test_stream_hides_empty_think():

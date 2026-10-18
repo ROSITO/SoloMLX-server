@@ -68,7 +68,8 @@ class InferenceEngine:
     async def generate_text(
         self,
         model: str,
-        messages: list[dict[str, str]],
+        messages: list[dict],
+        tools: list[dict] | None = None,
         max_tokens: int = 256,
         temperature: float = 0.2,
         top_p: float = 0.95,
@@ -76,7 +77,7 @@ class InferenceEngine:
     ) -> str:
         await self.ensure_model(model)
         self.last_used_ts = time.time()
-        prompt = await self.backend.build_chat_prompt(messages)
+        prompt = await self.backend.build_chat_prompt(messages, tools)
         return await self.backend.generate(
             prompt=prompt,
             max_tokens=max_tokens,
@@ -88,7 +89,8 @@ class InferenceEngine:
     async def stream_text(
         self,
         model: str,
-        messages: list[dict[str, str]],
+        messages: list[dict],
+        tools: list[dict] | None = None,
         max_tokens: int = 256,
         temperature: float = 0.2,
         top_p: float = 0.95,
@@ -96,7 +98,7 @@ class InferenceEngine:
     ):
         await self.ensure_model(model)
         self.last_used_ts = time.time()
-        prompt = await self.backend.build_chat_prompt(messages)
+        prompt = await self.backend.build_chat_prompt(messages, tools)
         async for token in self.backend.stream(
             prompt=prompt,
             max_tokens=max_tokens,
@@ -109,11 +111,12 @@ class InferenceEngine:
     async def prompt_and_completion_token_counts(
         self,
         model: str,
-        messages: list[dict[str, str]],
+        messages: list[dict],
         completion: str,
+        tools: list[dict] | None = None,
     ) -> tuple[int, int]:
         await self.ensure_model(model)
-        prompt = await self.backend.build_chat_prompt(messages)
+        prompt = await self.backend.build_chat_prompt(messages, tools)
         prompt_tokens = await self.backend.count_tokens(prompt)
         completion_tokens = await self.backend.count_tokens(completion)
         return prompt_tokens, completion_tokens
