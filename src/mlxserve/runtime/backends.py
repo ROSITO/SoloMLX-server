@@ -227,7 +227,7 @@ class MLXLMBackend(RuntimeBackend):
         prompt_cache_gb: float = 0.0,
         mtp: bool = False,
         mtp_draft_model: str = "",
-        mtp_max_draft: int = 2,
+        mtp_max_draft: int = 3,
     ) -> None:
         self.model_name: str | None = None
         self.model: Any = None
@@ -331,7 +331,9 @@ class MLXLMBackend(RuntimeBackend):
         if self.prompt_cache_gb > 0:
             from mlx_lm.models.cache import LRUPromptCache
 
-            self._prompt_cache = LRUPromptCache(max_bytes=int(self.prompt_cache_gb * 1e9))
+            # Bytes are the real limit; mlx-lm's default of 10 entries evicted an agent's history after ~4 other
+            # requests (each request stores 2-3 entries), long before the byte budget was reached.
+            self._prompt_cache = LRUPromptCache(max_size=1024, max_bytes=int(self.prompt_cache_gb * 1e9))
         _ = apply_moe_expert_offload(
             self.model,
             keep_experts=self.moe_resident_experts,

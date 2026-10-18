@@ -61,7 +61,7 @@ class Settings(BaseSettings):
     # Opt-in. Draft model: MLXSERVE_MTP_DRAFT_MODEL, or the "-assistant" twin of the served model.
     mtp: bool = False
     mtp_draft_model: str = ""
-    mtp_max_draft: int = 2  # best of 1-3 on chat/code/agent prompts (MoE: each extra verified token costs ~8 ms)
+    mtp_max_draft: int = 3  # best of 1-5 on chat/code/agent/tool-call prompts (Gemma 4 26B-A4B, M3 36 GB)
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
 

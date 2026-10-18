@@ -26,7 +26,7 @@ def assistant_repo(model_id: str) -> str | None:
     return f"{model_id[: m.start()]}-assistant{m.group(0)}" if m and "gemma-4" in model_id else None
 
 
-def load_mtp(model_id: str, model: Any, tokenizer: Any, draft_id: str = "", max_draft: int = 2) -> "GemmaMTP | None":
+def load_mtp(model_id: str, model: Any, tokenizer: Any, draft_id: str = "", max_draft: int = 3) -> "GemmaMTP | None":
     """GemmaMTP for a Gemma 4 target, or None (other model, no drafter found)."""
     lm = getattr(model, "language_model", None)
     if lm is None or not str(getattr(lm, "model_type", "")).startswith("gemma4"):
@@ -75,7 +75,7 @@ def _probs(logits: mx.array, temperature: float, top_p: float) -> mx.array:
 
 
 def _sample(p: mx.array) -> int:
-    return mx.random.categorical(mx.log(p)).item()
+    return mx.random.categorical(mx.log(p)).item()  # categorical normalizes: p need not sum to 1
 
 
 def accept_sampled(p: mx.array, q: list[mx.array], drafts: list[int], eos: set[int]) -> tuple[int, int]:
@@ -84,22 +84,25 @@ def accept_sampled(p: mx.array, q: list[mx.array], drafts: list[int], eos: set[i
     Returns (number of accepted drafts m, next token): drafts[:m] are kept, then the next token is
     resampled from max(p - q, 0) at the first rejection, or drawn from p after the last draft.
     """
-    for i, d in enumerate(drafts):
-        if d in eos:
+    k = len(drafts)
+    if k:  # all acceptance tests in one GPU round trip
+        idx, d = mx.arange(k), mx.array(drafts)
+        pd, qd, u = mx.stack([p[idx, d], mx.stack(q)[idx, d], mx.random.uniform(shape=(k,))]).tolist()
+    for i, tok in enumerate(drafts):
+        if tok in eos:
             return i, _sample(p[i])
-        pd, qd = p[i, d].item(), q[i][d].item()
-        if mx.random.uniform().item() * qd >= pd:  # reject with probability 1 - p/q
+        if u[i] * qd[i] >= pd[i]:  # reject with probability 1 - p/q
             residual = mx.maximum(p[i] - q[i], 0.0)
-            total = mx.sum(residual).item()
-            return i, _sample(residual / total if total > 0 else p[i])
-    return len(drafts), _sample(p[len(drafts)])
+            return i, _sample(mx.where(mx.sum(residual) > 0, residual, p[i]))
+    return k, _sample(p[k])
 
 
 class GemmaMTP:
-    # Keep drafting while the drafter is at least this sure of its token (tuned on chat/code/agent prompts).
-    confidence = 0.6
+    # Keep drafting while the drafter is at least this sure of its token. With max_draft 3, tuned on chat, code,
+    # 8.5k-token agent and tool-call prompts: x1.33 geometric mean (0.6: x1.31; max_draft 2: x1.27).
+    confidence = 0.4
 
-    def __init__(self, model: Any, tokenizer: Any, draft: Any, max_draft: int = 2):
+    def __init__(self, model: Any, tokenizer: Any, draft: Any, max_draft: int = 3):
         self.model, self.tokenizer, self.draft = model, tokenizer, draft
         self.lm = model.language_model
         self.tm = self.lm.model
@@ -135,19 +138,28 @@ class GemmaMTP:
             hid, logits = self.draft(mx.concatenate([emb.astype(hid.dtype), hid], axis=-1), kv, position_ids=posa)
             if temperature == 0:
                 q = mx.softmax(logits[0, -1].astype(mx.float32))
-                y = mx.argmax(q).item()
+                tok = mx.argmax(q)
             else:
                 q = _probs(logits[0, -1], temperature, top_p)
-                y = _sample(q)
+                tok = mx.random.categorical(mx.log(q))
                 qs.append(q)
+            y, conf = mx.stack([tok.astype(mx.float32), q[tok]]).tolist()  # one GPU round trip per step
+            y = int(y)
             drafts.append(y)
-            if y in self.eos or q[y].item() < self.confidence:
+            if y in self.eos or conf < self.confidence:
                 break
         return drafts, qs
 
     def generate(self, prompt: list[int], cache: list[Any], max_tokens: int, temperature: float, top_p: float,
                  prefill_step: int = 2048) -> Iterator[SimpleNamespace]:
         """Yield SimpleNamespace(text, token) like mlx_lm.stream_generate. `prompt` = tokens not in `cache` yet."""
+        from mlx_lm.generate import generation_stream, wired_limit
+
+        # Same execution context as stream_generate: dedicated GPU stream, weights wired in memory.
+        with wired_limit(self.model, [generation_stream]), mx.stream(generation_stream):
+            yield from self._generate(prompt, cache, max_tokens, temperature, top_p, prefill_step)
+
+    def _generate(self, prompt, cache, max_tokens, temperature, top_p, prefill_step):
         self.fed = []
         for i in range(0, len(prompt), prefill_step):
             h, logits = self._target(prompt[i : i + prefill_step], cache)
