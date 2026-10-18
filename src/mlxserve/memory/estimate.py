@@ -47,11 +47,18 @@ def admission_memory_gb(
     kv_heads: int,
     kv_head_dim: int,
     kv_bytes_per_element: float,
+    kv_gb: float | None = None,
 ) -> float:
-    """Token-derived estimate plus optional capped KV overhead for pre-admission."""
+    """Token-derived estimate plus KV overhead for pre-admission.
+
+    ``kv_gb``: KV size measured for the loaded model (used as is). Otherwise the generic,
+    capped upper bound below (no model loaded yet).
+    """
     base = estimated_request_gb(prompt_tokens, max_new_tokens, tokens_per_gb, cap_gb)
     if not kv_enabled:
         return base
+    if kv_gb is not None:
+        return base + kv_gb
     seq = max(1, prompt_tokens + max_new_tokens)
     kv = estimate_kv_cache_gb(
         seq,
