@@ -137,6 +137,12 @@ Préfixe commun : **`MLXSERVE_`**.
 | `MLXSERVE_METRICS_LABEL_CHAT_BY_ZONE` | Exposer `mlxserve_chat_completions_labeled_total{memory_zone=…}` | `true` |
 | `MLXSERVE_METRICS_LABEL_CHAT_BY_MODEL` | Exposer les compteurs par modèle (cardinalité) | `true` |
 | `MLXSERVE_METRICS_MODEL_LABEL_MAX_LEN` | Longueur max du label `model` en Prometheus | `64` |
+| `MLXSERVE_SSD_EXPERTS_ENABLED` | Chargement expérimental des experts MoE depuis le SSD, sans suppression ; checkpoints MLX avec experts natifs empilés. Voir [guide SSD](docs/SSD_EXPERT_PAGING.md) | `false` |
+| `MLXSERVE_SSD_EXPERTS_CACHE_GB` | Cache global des projections d’experts en Gio ; poids communs, KV et buffers s’ajoutent | `4.0` |
+| `MLXSERVE_SSD_EXPERTS_CACHE_POLICY` | Politique de cache des experts : `lru` ou `lfu` | `lru` |
+| `MLXSERVE_SSD_EXPERTS_FREQUENCY_CAP` | Crédit de fréquence maximal par expert et appel ; `1` évite que le préfill domine le cache LFU | désactivé |
+| `MLXSERVE_SSD_EXPERTS_PACKED_DIR` | Dossier des experts réorganisés par `scripts/pack_ssd_experts.py` (une lecture par expert au lieu de 9) ; vide = dossier du checkpoint, sinon lecture champ par champ | *(vide)* |
+| `MLXSERVE_SSD_EXPERTS_METAL_CACHE_MB` | Limite des buffers Metal libres conservés pendant ce mode, en Mio | `128` |
 | `MLXSERVE_MOE_NUM_EXPERTS` | Nombre d'experts pour backend `moe_stub` | `4` |
 | `MLXSERVE_MOE_TOP_K` | Top-k experts routés pour backend `moe_stub` | `2` |
 | `MLXSERVE_MOE_NUM_SHARED_EXPERTS` | Experts partagés toujours actifs (`moe_stub`) | `1` |

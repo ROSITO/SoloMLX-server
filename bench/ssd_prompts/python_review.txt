@@ -1,0 +1,50 @@
+Review this Python code for a service that merges delayed events from several devices. Explain concrete correctness problems and propose a corrected design. Events may arrive more than once, timestamps are device-local, and a device can restart its sequence counter after a factory reset. The caller requires a bounded memory footprint and must be able to replay an archived event log.
+
+from dataclasses import dataclass
+from collections import defaultdict
+import time
+
+@dataclass
+class Event:
+    device: str
+    sequence: int
+    timestamp: float
+    amount: int
+
+class Ledger:
+    def __init__(self):
+        self.total = defaultdict(int)
+        self.last_sequence = {}
+        self.seen = set()
+        self.history = []
+
+    def accept(self, events):
+        events.sort(key=lambda event: event.timestamp)
+        accepted = []
+        for event in events:
+            key = (event.device, event.sequence)
+            if key in self.seen:
+                continue
+            if event.sequence <= self.last_sequence.get(event.device, -1):
+                continue
+            self.last_sequence[event.device] = event.sequence
+            self.seen.add(key)
+            self.total[event.device] += event.amount
+            self.history.append((time.time(), event))
+            accepted.append(event)
+        return accepted
+
+    def checkpoint(self):
+        return {
+            'totals': dict(self.total),
+            'last_sequence': self.last_sequence,
+            'saved_at': time.time(),
+        }
+
+    def restore(self, checkpoint):
+        self.total = defaultdict(int, checkpoint['totals'])
+        self.last_sequence = checkpoint['last_sequence']
+        self.history = []
+        self.seen = set()
+
+Give examples that distinguish duplicate events, delayed events, and valid events from a new device session. Explain what must be persisted atomically and which tests would expose the current failures.

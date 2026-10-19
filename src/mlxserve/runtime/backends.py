@@ -250,6 +250,8 @@ class MLXLMBackend(RuntimeBackend):
         self.mtp, self.mtp_draft_model, self.mtp_max_draft = mtp, mtp_draft_model, mtp_max_draft
         self._mtp: Any = None  # GemmaMTP when enabled and the served model has a drafter
         self._prompt_cache: Any = None  # mlx_lm LRUPromptCache, reset on (re)load
+        self._ssd_expert_cache = None
+        self._ssd_previous_metal_cache_limit = None
         self._prompt_cache_lock = Lock()
         # All MLX work runs on this one thread: arrays (e.g. a reused KV cache) are bound to the GPU
         # stream of the thread that created them, and MLX runs one generation at a time anyway.
@@ -335,7 +337,49 @@ class MLXLMBackend(RuntimeBackend):
             from mlx_lm import load as mlx_load
         except Exception as exc:
             raise RuntimeError("mlx-lm is not installed or failed to import") from exc
-        self.model, self.tokenizer = await self._on_mlx_thread(lambda: mlx_load(model))
+        from mlxserve.config import settings
+
+        if self._ssd_expert_cache is not None:
+            self._ssd_expert_cache.clear()
+            self._ssd_expert_cache.store.close()
+        if settings.ssd_experts_enabled:
+            if self.moe_resident_experts > 0:
+                raise ValueError("SSD expert paging cannot be combined with expert pruning")
+
+            def load_paged():
+                from pathlib import Path
+                import mlx.core as mx
+                from huggingface_hub import snapshot_download
+                from mlxserve.runtime.ssd_experts import attach_ssd_experts
+
+                previous_limit = mx.set_cache_limit(settings.ssd_experts_metal_cache_mb * 1024**2)
+                directory = Path(model)
+                try:
+                    if not directory.is_dir():
+                        directory = Path(snapshot_download(repo_id=model))
+                    loaded, tokenizer = mlx_load(str(directory), lazy=True)
+                    cache = attach_ssd_experts(
+                        loaded, directory, int(settings.ssd_experts_cache_gb * 1024**3),
+                        cache_policy=settings.ssd_experts_cache_policy,
+                        frequency_cap=settings.ssd_experts_frequency_cap,
+                        packed_dir=settings.ssd_experts_packed_dir or None,
+                    )
+                except BaseException:
+                    mx.set_cache_limit(previous_limit)
+                    raise
+                return loaded, tokenizer, cache, previous_limit
+
+            self.model, self.tokenizer, self._ssd_expert_cache, previous_limit = await self._on_mlx_thread(load_paged)
+            if self._ssd_previous_metal_cache_limit is None:
+                self._ssd_previous_metal_cache_limit = previous_limit
+            logging.getLogger(__name__).info("Exact SSD expert paging enabled: %s", self._ssd_expert_cache.stats())
+        else:
+            self.model, self.tokenizer = await self._on_mlx_thread(lambda: mlx_load(model))
+            self._ssd_expert_cache = None
+            if self._ssd_previous_metal_cache_limit is not None:
+                import mlx.core as mx
+                mx.set_cache_limit(self._ssd_previous_metal_cache_limit)
+                self._ssd_previous_metal_cache_limit = None
         self._kv_profile = await self._on_mlx_thread(self._measure_kv_profile)
         self._mtp = None
         if self.mtp:
@@ -416,6 +460,8 @@ class MLXLMBackend(RuntimeBackend):
         def _release() -> None:
             import mlx.core as mx
 
+            if self._ssd_expert_cache is not None:
+                self._ssd_expert_cache.clear()
             mx.clear_cache()  # freed MLX buffers kept for reuse
             store = self._prompt_cache
             if drop_prompt_cache and store is not None:
@@ -562,6 +608,14 @@ class MLXLMBackend(RuntimeBackend):
                 break
 
     def unload(self) -> None:
+        if self._ssd_expert_cache is not None:
+            self._ssd_expert_cache.clear()
+            self._ssd_expert_cache.store.close()
+        self._ssd_expert_cache = None
+        if self._ssd_previous_metal_cache_limit is not None:
+            import mlx.core as mx
+            mx.set_cache_limit(self._ssd_previous_metal_cache_limit)
+            self._ssd_previous_metal_cache_limit = None
         self.model = None
         self.tokenizer = None
         self.model_name = None

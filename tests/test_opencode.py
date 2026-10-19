@@ -49,3 +49,15 @@ def test_prompt_over_context_length_is_rejected_fast(monkeypatch):
     assert r.status_code == 400 and "context_length_exceeded" in r.json()["error"]["message"]
     ok = client.post("/v1/chat/completions", json={"messages": [{"role": "user", "content": "court"}]})
     assert ok.status_code == 200
+
+
+def test_advertised_id_of_a_path_configured_model_resolves_to_the_path(monkeypatch):
+    from mlxserve.api.app import _resolve_model
+
+    path = "/Volumes/X/hub/models--mlx-community--Some-Model-4bit/snapshots/abc123"
+    monkeypatch.setattr(settings, "default_model", path)
+    advertised = TestClient(app).get("/v1/models").json()["data"][0]["id"]
+    assert advertised == "mlx-community/Some-Model-4bit"
+    assert _resolve_model(advertised) == path          # no second load under another name
+    assert _resolve_model(None) == path
+    assert _resolve_model("other/model") == "other/model"

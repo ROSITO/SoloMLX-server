@@ -18,3 +18,6 @@ docs/.env
 bench/**/*.pt
 # Local symlink to external volume (machine-specific)
 bench/moe_conversion
+
+# Raw SSD paging benchmark evidence (JSON, kept locally; summarized in docs/SSD_*.md)
+artifacts/

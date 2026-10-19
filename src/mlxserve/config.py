@@ -1,5 +1,7 @@
+from typing import Literal
+
 import psutil
-from pydantic import field_validator, model_validator
+from pydantic import Field, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -43,6 +45,15 @@ class Settings(BaseSettings):
     moe_resident_experts: int = 0
     moe_resident_strategy: str = "l2"
     moe_single_expert_fastpath: bool = True
+    # Exact SSD paging of native stacked SwitchLinear experts (experimental).
+    ssd_experts_enabled: bool = False
+    ssd_experts_cache_gb: float = Field(default=4.0, ge=0, allow_inf_nan=False)
+    ssd_experts_cache_policy: Literal['lru', 'lfu'] = 'lru'
+    ssd_experts_frequency_cap: int | None = Field(default=None, ge=1)
+    ssd_experts_metal_cache_mb: int = Field(default=128, ge=0)
+    # Directory with ssd_experts*.safetensors from scripts/pack_ssd_experts.py (one read per expert);
+    # empty = look in the checkpoint directory. Unpacked experts are read field by field.
+    ssd_experts_packed_dir: str = ''
     # mlx_lm logits processor: >1.0 discourages repetition; can destabilize some quants — off by default.
     # Enable e.g. MLXSERVE_GENERATION_REPETITION_PENALTY=1.08 when needed.
     generation_repetition_penalty: float = 1.0
