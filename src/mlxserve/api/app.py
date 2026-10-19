@@ -331,6 +331,20 @@ async def _admit(estimated_gb: float) -> tuple[str, str]:
     return zone, reason
 
 
+def _resolve_model(requested: str | None) -> str:
+    """Map the id advertised by /v1/models back to the configured model.
+
+    A model configured by local path (HF cache snapshot) is advertised as org/name; clients then send
+    that id, which must not trigger a second load (or an offline lookup that can fail).
+    """
+    if not requested:
+        return settings.default_model
+    for candidate in (engine.loaded_model, settings.default_model):
+        if candidate and candidate != requested and display_hf_model_id(candidate) == requested:
+            return candidate
+    return requested
+
+
 def _loaded_kv_gb(model: str, seq_len: int) -> float | None:
     """Real KV size for the already-loaded model (None: fall back to the generic bound)."""
     estimate = getattr(engine.backend, "kv_gb_estimate", None)
@@ -346,7 +360,7 @@ def _cached_tokens_details() -> dict[str, int] | None:
 async def chat_completions(req: ChatCompletionRequest):
     metrics.chat_requests_total += 1
     chat_started = time.time()
-    model = req.model or settings.default_model
+    model = _resolve_model(req.model)
     msg_dicts = template_messages(req.messages)
     tools = req.tools if req.tools and req.tool_choice != "none" else None
     prompt_est = heuristic_prompt_tokens(msg_dicts)

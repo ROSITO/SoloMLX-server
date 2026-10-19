@@ -25,6 +25,7 @@ def main():
     p.add_argument('--frequency-cap', type=int, default=None, help='Cap LFU credit per expert fetch (experimental)')
     p.add_argument('--cache-gb', type=float, default=8)
     p.add_argument('--memory-limit-gb', type=float, default=12)
+    p.add_argument('--packed-dir', type=Path, default=None, help='Directory with ssd_experts*.safetensors (one read per expert)')
     p.add_argument('--output', type=Path, required=True)
     args = p.parse_args()
     if min(args.prompt_tokens - 1, args.gen_tokens, args.rounds, args.prefill_step) <= 0 or args.warmup < 0:
@@ -46,7 +47,7 @@ def main():
         physical_ram_bytes=psutil.virtual_memory().total,
         checkpoint_bytes=sum(f.stat().st_size for f in args.model.glob('model*.safetensors')),
         protocol='prefill N-1 then G forward+greedy steps; EOS ignored; KV reset; expert cache retained',
-        cache_policy=args.cache_policy, frequency_cap=args.frequency_cap, fused_swiglu=args.fused_swiglu, prefill_step=args.prefill_step, memory_limit_gb=args.memory_limit_gb,
+        cache_policy=args.cache_policy, frequency_cap=args.frequency_cap, fused_swiglu=args.fused_swiglu, prefill_step=args.prefill_step, memory_limit_gb=args.memory_limit_gb, packed_dir=str(args.packed_dir) if args.packed_dir else None,
         runtime_versions={n: importlib.metadata.version(n) for n in ('mlx','mlx-lm')},
         source_sha256={str(f): hashlib.sha256(f.read_bytes()).hexdigest() for f in
             [Path('src/mlxserve/runtime/ssd_experts.py'), Path('src/mlxserve/runtime/ssd_qmm.py'), Path(__file__)]})
@@ -68,7 +69,8 @@ def main():
         with monitor:
             monitor.phase = 'load'
             model, tokenizer = load(str(args.model), lazy=True)
-            cache = attach_ssd_experts(model, args.model, report['cache_limit_bytes'], cache_policy=args.cache_policy, frequency_cap=args.frequency_cap)
+            cache = attach_ssd_experts(model, args.model, report['cache_limit_bytes'], cache_policy=args.cache_policy,
+                                       frequency_cap=args.frequency_cap, packed_dir=args.packed_dir)
             if args.fused_swiglu:
                 from mlxserve.runtime.ssd_experts import SSDGroupedSwitch
                 for _, module in model.named_modules():
