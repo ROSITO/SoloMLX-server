@@ -1,3 +1,4 @@
+import asyncio
 import time
 
 from mlxserve.config import settings
@@ -14,6 +15,7 @@ class InferenceEngine:
     def __init__(self, backend_mode: str = "auto") -> None:
         self.loaded_model: str | None = None
         self.last_used_ts: float = time.time()
+        self._load_lock = asyncio.Lock()  # concurrent first requests (e.g. OpenCode's title + agent) load once
         self.backend = self._build_backend(backend_mode)
 
     @staticmethod
@@ -40,6 +42,9 @@ class InferenceEngine:
                 repetition_context_size=settings.generation_repetition_context_size,
                 enable_thinking=settings.enable_thinking,
                 prompt_cache_gb=settings.prompt_cache_gb,
+                mtp=settings.mtp,
+                mtp_draft_model=settings.mtp_draft_model,
+                mtp_max_draft=settings.mtp_max_draft,
             )
         if mode == "auto":
             try:
@@ -56,6 +61,9 @@ class InferenceEngine:
                     repetition_context_size=settings.generation_repetition_context_size,
                     enable_thinking=settings.enable_thinking,
                     prompt_cache_gb=settings.prompt_cache_gb,
+                    mtp=settings.mtp,
+                    mtp_draft_model=settings.mtp_draft_model,
+                    mtp_max_draft=settings.mtp_max_draft,
                 )
             except Exception:
                 return StubBackend()
@@ -63,8 +71,10 @@ class InferenceEngine:
 
     async def ensure_model(self, model: str) -> None:
         if self.loaded_model != model:
-            await self.backend.load(model)
-            self.loaded_model = model
+            async with self._load_lock:
+                if self.loaded_model != model:
+                    await self.backend.load(model)
+                    self.loaded_model = model
         self.last_used_ts = time.time()
 
     async def generate_text(

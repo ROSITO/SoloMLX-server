@@ -57,6 +57,12 @@ class Settings(BaseSettings):
     # Context window advertised to clients (/v1/models context_length, `mlxserve opencode`):
     # min(this, the model's max_position_embeddings).
     context_tokens: int = 131072
+    # Gemma 4 multi-token prediction with Google's assistant drafter (downloaded on first load, ~225 MB):
+    # +49 % generation tok/s in OpenCode sessions. Only Gemma 4 models are affected; if no drafter can be
+    # loaded the server runs without it. Draft model: MLXSERVE_MTP_DRAFT_MODEL, or the "-assistant" twin.
+    mtp: bool = True
+    mtp_draft_model: str = ""
+    mtp_max_draft: int = 3  # best of 1-5 on chat/code/agent/tool-call prompts (Gemma 4 26B-A4B, M3 36 GB)
 
     model_config = SettingsConfigDict(env_prefix="MLXSERVE_", extra="ignore")
 

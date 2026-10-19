@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import logging
 import re
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
@@ -225,6 +226,9 @@ class MLXLMBackend(RuntimeBackend):
         repetition_context_size: int = 64,
         enable_thinking: bool = False,
         prompt_cache_gb: float = 0.0,
+        mtp: bool = False,
+        mtp_draft_model: str = "",
+        mtp_max_draft: int = 3,
     ) -> None:
         self.model_name: str | None = None
         self.model: Any = None
@@ -240,6 +244,8 @@ class MLXLMBackend(RuntimeBackend):
         self.repetition_context_size = repetition_context_size
         self.enable_thinking = enable_thinking
         self.prompt_cache_gb = prompt_cache_gb
+        self.mtp, self.mtp_draft_model, self.mtp_max_draft = mtp, mtp_draft_model, mtp_max_draft
+        self._mtp: Any = None  # GemmaMTP when enabled and the served model has a drafter
         self._prompt_cache: Any = None  # mlx_lm LRUPromptCache, reset on (re)load
         self._prompt_cache_lock = Lock()
         # All MLX work runs on this one thread: arrays (e.g. a reused KV cache) are bound to the GPU
@@ -262,6 +268,8 @@ class MLXLMBackend(RuntimeBackend):
             "kv_bits": self.kv_bits,
             "kv_group_size": self.kv_group_size,
             "quantized_kv_start": self.quantized_kv_start,
+            "_temperature": temperature,  # for MTP; popped before stream_generate
+            "_top_p": top_p,
         }
         if self.repetition_penalty is not None and self.repetition_penalty > 1.0:
             out["logits_processors"] = make_logits_processors(
@@ -312,12 +320,24 @@ class MLXLMBackend(RuntimeBackend):
             raise RuntimeError("mlx-lm is not installed or failed to import") from exc
         self.model, self.tokenizer = await self._on_mlx_thread(lambda: mlx_load(model))
         self._kv_profile = await self._on_mlx_thread(self._measure_kv_profile)
+        self._mtp = None
+        if self.mtp:
+            from mlxserve.runtime.mtp import load_mtp
+
+            try:
+                self._mtp = await self._on_mlx_thread(
+                    lambda: load_mtp(model, self.model, self.tokenizer, self.mtp_draft_model, self.mtp_max_draft)
+                )
+            except Exception as exc:  # e.g. offline with no cached drafter: serve without MTP
+                logging.getLogger(__name__).warning("MTP drafter unavailable for %s, running without it: %s", model, exc)
         self._prompt_cache = None
         self._gen_suffix = None
         if self.prompt_cache_gb > 0:
             from mlx_lm.models.cache import LRUPromptCache
 
-            self._prompt_cache = LRUPromptCache(max_bytes=int(self.prompt_cache_gb * 1e9))
+            # Bytes are the real limit; mlx-lm's default of 10 entries evicted an agent's history after ~4 other
+            # requests (each request stores 2-3 entries), long before the byte budget was reached.
+            self._prompt_cache = LRUPromptCache(max_size=1024, max_bytes=int(self.prompt_cache_gb * 1e9))
         _ = apply_moe_expert_offload(
             self.model,
             keep_experts=self.moe_resident_experts,
@@ -396,16 +416,21 @@ class MLXLMBackend(RuntimeBackend):
         from mlx_lm import stream_generate
         from mlx_lm.models.cache import make_prompt_cache
 
+        gen_kw = dict(gen_kw)
+        temperature, top_p = gen_kw.pop("_temperature", 0.0), gen_kw.pop("_top_p", 1.0)
+        mtp = self._mtp if not gen_kw.get("logits_processors") and gen_kw.get("kv_bits") is None else None
         tok = self.tokenizer
         add_special = tok.bos_token is None or not prompt.startswith(tok.bos_token)
         tokens = tok.encode(prompt, add_special_tokens=add_special)
         store = self._prompt_cache
-        cache, rest = None, tokens
+        cache, rest, keep = None, tokens, None  # keep: the prefix entry the next turn will reuse
         if store is not None:
             with self._prompt_cache_lock:
                 cache, rest = store.fetch_nearest_cache(self.model_name, tokens)
             if cache is None or not rest:
                 cache, rest = make_prompt_cache(self.model), tokens
+            else:
+                keep = (tokens[: len(tokens) - len(rest)], copy.deepcopy(cache))
         self.last_cached_tokens = len(tokens) - len(rest)
         suffix = self._generation_suffix() if store is not None else ""
         if suffix and prompt.endswith(suffix):
@@ -415,16 +440,27 @@ class MLXLMBackend(RuntimeBackend):
             start = len(tokens) - len(rest)
             if len(stable) > start and tokens[: len(stable)] == stable:
                 self._prefill(tokens[start : len(stable)], cache, gen_kw.get("prefill_step_size") or 2048)
+                keep = (stable, copy.deepcopy(cache))
                 with self._prompt_cache_lock:
-                    store.insert_cache(self.model_name, stable, copy.deepcopy(cache))
+                    store.insert_cache(self.model_name, *keep)
                 rest = tokens[len(stable) :]
         generated: list[int] = []
-        for item in stream_generate(self.model, tok, prompt=rest, prompt_cache=cache, **gen_kw):
-            generated.append(item.token)
-            yield item
+        if mtp is not None:
+            cache = cache if cache is not None else make_prompt_cache(self.model)
+            yield from mtp.generate(rest, cache, gen_kw["max_tokens"], temperature, top_p, gen_kw.get("prefill_step_size") or 2048)
+            generated = mtp.fed  # exactly what went into the KV cache
+        else:
+            for item in stream_generate(self.model, tok, prompt=rest, prompt_cache=cache, **gen_kw):
+                generated.append(item.token)
+                yield item
         if store is not None:
             with self._prompt_cache_lock:
                 store.insert_cache(self.model_name, tokens + generated, cache)
+                if keep:
+                    # mlx-lm's LRU does not refresh an entry on fetch. Re-insert the prefix the next turn will
+                    # reuse (new history snapshot, else the one just reused) last, so it outlives this turn's
+                    # own, rarely reused, entry.
+                    store.insert_cache(self.model_name, *keep)
 
     async def generate(
         self,
@@ -499,3 +535,4 @@ class MLXLMBackend(RuntimeBackend):
         self.model_name = None
         self._prompt_cache = None
         self._kv_profile = None
+        self._mtp = None
