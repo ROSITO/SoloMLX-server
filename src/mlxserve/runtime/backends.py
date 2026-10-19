@@ -1,5 +1,6 @@
 import asyncio
 import copy
+import logging
 import re
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor
@@ -323,9 +324,12 @@ class MLXLMBackend(RuntimeBackend):
         if self.mtp:
             from mlxserve.runtime.mtp import load_mtp
 
-            self._mtp = await self._on_mlx_thread(
-                lambda: load_mtp(model, self.model, self.tokenizer, self.mtp_draft_model, self.mtp_max_draft)
-            )
+            try:
+                self._mtp = await self._on_mlx_thread(
+                    lambda: load_mtp(model, self.model, self.tokenizer, self.mtp_draft_model, self.mtp_max_draft)
+                )
+            except Exception as exc:  # e.g. offline with no cached drafter: serve without MTP
+                logging.getLogger(__name__).warning("MTP drafter unavailable for %s, running without it: %s", model, exc)
         self._prompt_cache = None
         self._gen_suffix = None
         if self.prompt_cache_gb > 0:

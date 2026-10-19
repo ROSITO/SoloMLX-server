@@ -52,3 +52,22 @@ def test_eos_draft_is_never_accepted_blindly():
     p = mx.array([[0.0, 1.0], [0.5, 0.5]])
     m, nxt = accept_sampled(p, [mx.array([1.0, 0.0])], [0], eos={0})
     assert m == 0 and nxt == 1  # resampled from the target, which never ends here
+
+
+def test_backend_runs_without_mtp_when_drafter_is_unavailable(monkeypatch):
+    import asyncio
+    import types
+
+    import mlxserve.runtime.mtp as mtp_mod
+    from mlxserve.runtime.backends import MLXLMBackend
+
+    monkeypatch.setitem(__import__("sys").modules, "mlx_lm", types.SimpleNamespace(load=lambda m: (object(), object())))
+
+    def offline(*a, **k):
+        raise OSError("offline and not cached")
+
+    monkeypatch.setattr(mtp_mod, "load_mtp", offline)
+    b = MLXLMBackend(mtp=True)
+    monkeypatch.setattr(b, "_measure_kv_profile", lambda: None)
+    asyncio.run(b.load("mlx-community/gemma-4-26B-A4B-it-qat-4bit"))
+    assert b.model is not None and b._mtp is None
