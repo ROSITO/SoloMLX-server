@@ -27,6 +27,29 @@ The server also bounds retained free Metal buffers, defaulting to 128 MiB while 
 
 Only checkpoints already converted to native stacked MLX expert layout are supported. Missing source names or mismatching shapes are rejected. Native SwitchGLU and SwitchMLP projections are supported; custom expert modules are not. Models whose sanitization changes expert values without changing their shapes have not been validated.
 
+## Packed experts: one read per expert
+
+A quantized GLU expert is stored as 9 separate rows in the checkpoint (up/gate/down × weight/scales/biases; 1.69 MiB in total for Qwen3-Next), so a cache miss costs 9 reads of ~190 KiB. `scripts/pack_ssd_experts.py` writes `ssd_experts.safetensors`: one contiguous row per expert, in the order the server computes with. It streams the checkpoint and never loads the model (~1.5 GB/s; ~30 s for Qwen3-Next's 40 GiB of experts).
+
+```sh
+.venv/bin/python scripts/pack_ssd_experts.py --src /path/to/checkpoint --dst /path/to/packed-dir
+MLXSERVE_SSD_EXPERTS_PACKED_DIR=/path/to/packed-dir   # empty: look in the checkpoint directory
+```
+
+The packed directory can be on another disk than the checkpoint: put the experts on the internal SSD and keep the checkpoint elsewhere, since only its ~1.3 GiB of shared weights is read, once, at load. A packed file is checked against the checkpoint (fields, sizes, expert count) and rejected if it does not match. Experts without a packed row are read field by field as before, and results are identical either way (tested).
+
+Disk-only measurement, Qwen3-Next layers 4-7 on the internal SSD, 8 I/O workers, uncached reads, page cache evicted before each run, no expert read twice (`scripts/bench_ssd_reads.py`):
+
+| Read pattern | 9 reads per expert | 1 read per expert | |
+| --- | --- | --- | --- |
+| Decode: 10 experts of one layer | 6.08 ms (2.89 GB/s) | **3.90 ms** (4.40 GB/s) | x1.56 |
+| Prefill batch: 37 experts (64 MiB) | 21.79 ms (3.00 GB/s) | **11.74 ms** (5.36 GB/s) | x1.86 |
+| Whole layer: 512 experts | 316.8 ms (2.86 GB/s) | **168.7 ms** (5.27 GB/s) | x1.88 |
+
+Expected effect, from the per-token breakdown of the measured runs: prefill read time roughly halves (6.1 of 11.2 s per 1024-token chunk at a 12 GiB cache), first-token latency of each agent turn drops accordingly, and decode at a smaller cache (8 GiB: 32 ms/token of reads) gains the most. At a 12 GiB cache decode was already 80 % routing synchronization, so its gain is small. Not yet measured end to end.
+
+Benchmark caveat: on macOS, `F_NOCACHE` does not keep every page out of the unified buffer cache. A file just written or read can be served from RAM, and the 9-reads format then shows 8-9 GB/s. Evict files first (`msync(MS_INVALIDATE)`, as the benchmark script does) before comparing.
+
 ## Historical memory validation — 19 October 2026
 
 Machine: Apple M3 Pro Mac (Mac15,6), 36 GiB physical RAM, external T7 Shield SSD. Runtime: MLX 0.32.4, mlx-lm 0.32.2. Other applications were running, so these are functional validation measurements, not controlled comparisons with another engine.
@@ -114,6 +137,6 @@ Both scripts require a local checkpoint and never automatically download one. Th
 
 ## Further work
 
-Pack all projections of each expert contiguously, prefetch and overlap reads with GPU computation, expose the fused kernel once validated more broadly, and validate long agent contexts, cancellation, multiple concurrent model identities and MTP.
+Prefetch and overlap reads with GPU computation, reduce per-layer host work (decode is ~80 % routing synchronization at a 12 GiB cache), expose the fused kernel once validated more broadly, and validate long agent contexts, cancellation, multiple concurrent model identities and MTP.
 
 Janas is an architectural reference; this implementation does not copy its GPL source. Its documented cache-conditional routing can skip low-weight experts at small cache sizes, whereas this implementation computes every selected expert.

@@ -25,11 +25,20 @@ _DTYPES = {"F32": mx.float32, "F16": mx.float16, "BF16": mx.bfloat16,
            "I16": mx.int16, "U8": mx.uint8, "I8": mx.int8}
 
 
-class ExpertStore:
-    """Index headers only; pread copies just one expert's contiguous tensor row."""
+PACKED_GLOB = "ssd_experts*.safetensors"  # written by scripts/pack_ssd_experts.py
+PACKED_SUFFIX = ".ssd_packed"
 
-    def __init__(self, directory: str | Path):
+
+class ExpertStore:
+    """Index headers only; pread copies just one expert's contiguous tensor row.
+
+    With a packed file (one U8 row per expert holding all its projections' weight/scales/biases back to
+    back), a miss costs one read instead of one per field (9 for a quantized GLU).
+    """
+
+    def __init__(self, directory: str | Path, packed_dir: str | Path | None = None):
         self.tensors = {}
+        self.packed = {}  # switch-module prefix -> (path, file offset, row bytes, [(field, offset, nbytes)])
         self.bytes_read = 0
         self.read_seconds = 0.0
         self._fds = {}
@@ -49,6 +58,66 @@ class ExpertStore:
                     if name in self.tensors:
                         raise ValueError(f"Duplicate tensor: {name}")
                     self.tensors[name] = (path, 8 + header_size, meta)
+        self._index_packed(Path(packed_dir) if packed_dir else Path(directory))
+
+    def _index_packed(self, directory: Path):
+        for path in sorted(directory.glob(PACKED_GLOB)):
+            with path.open("rb") as f:
+                header_size = struct.unpack("<Q", f.read(8))[0]
+                header = json.loads(f.read(header_size))
+            fields = json.loads((header.get("__metadata__") or {}).get("ssd_fields", "{}"))
+            for name, meta in header.items():
+                if not name.endswith(PACKED_SUFFIX):
+                    continue
+                prefix = name[: -len(PACKED_SUFFIX)]
+                begin, _ = meta["data_offsets"]
+                experts, row = meta["shape"]
+                layout = [tuple(x) for x in fields[prefix]]
+                for field, offset, nbytes in layout:  # must describe the original checkpoint exactly
+                    original = self.tensors.get(prefix + "." + field)
+                    if original is None:
+                        raise ValueError(f"Packed field {prefix}.{field} not in checkpoint")
+                    o_begin, o_end = original[2]["data_offsets"]
+                    if original[2]["shape"][0] != experts or (o_end - o_begin) // experts != nbytes:
+                        raise ValueError(f"Packed field {prefix}.{field} does not match checkpoint")
+                if sum(n for _, _, n in layout) != row:
+                    raise ValueError(f"Packed row size mismatch: {prefix}")
+                self.packed[prefix] = (path, 8 + header_size + begin, row, layout)
+
+    def _read_packed(self, prefix: str, expert: int):
+        path, base, row_bytes, _ = self.packed[prefix]
+        start = time.perf_counter()
+        data = os.pread(self._fd(path), row_bytes, base + expert * row_bytes)
+        if len(data) != row_bytes:
+            raise ValueError(f"Truncated packed experts: {prefix}")
+        with self._lock:
+            self.bytes_read += len(data)
+            self.read_seconds += time.perf_counter() - start
+            self.read_calls += 1
+        return data
+
+    def read_packed_many(self, prefix: str, experts):
+        """One read per expert, in parallel; returns raw rows."""
+        if self._io_pool is None:
+            self._io_pool = ThreadPoolExecutor(max_workers=8, thread_name_prefix='expert-io')
+        start = time.perf_counter()
+        rows = list(self._io_pool.map(lambda e: self._read_packed(prefix, e), experts))
+        self.read_wall_seconds += time.perf_counter() - start
+        return rows
+
+    def _fd(self, path):
+        with self._lock:
+            if path not in self._fds:
+                fd = os.open(path, os.O_RDONLY)
+                try:
+                    if self.uncached_reads:
+                        import fcntl
+                        fcntl.fcntl(fd, fcntl.F_NOCACHE, 1)
+                except BaseException:
+                    os.close(fd)
+                    raise
+                self._fds[path] = fd
+            return self._fds[path]
 
     def _read_raw(self, name: str, expert: int):
         path, base, meta = self.tensors[name]
@@ -63,19 +132,7 @@ class ExpertStore:
         if end - begin != shape[0] * row_bytes:
             raise ValueError(f"Invalid tensor size: {name}")
         start = time.perf_counter()
-        with self._lock:
-            if path not in self._fds:
-                fd = os.open(path, os.O_RDONLY)
-                try:
-                    if self.uncached_reads:
-                        import fcntl
-                        fcntl.fcntl(fd, fcntl.F_NOCACHE, 1)
-                except BaseException:
-                    os.close(fd)
-                    raise
-                self._fds[path] = fd
-            fd = self._fds[path]
-        data = os.pread(fd, row_bytes, base + begin + expert * row_bytes)
+        data = os.pread(self._fd(path), row_bytes, base + begin + expert * row_bytes)
         if len(data) != row_bytes:
             raise ValueError(f"Truncated tensor: {name}")
         with self._lock:
@@ -206,26 +263,44 @@ class ExpertCache:
         size = sum((self.store.tensors[prefix + '.' + n][2]['data_offsets'][1]
                     - self.store.tensors[prefix + '.' + n][2]['data_offsets'][0])
                    // self.store.tensors[prefix + '.' + n][2]['shape'][0] for n in names)
+        groups = {}
+        for name in names:
+            groups.setdefault(name.rsplit('.', 1)[0] if '.' in name else '', []).append(name)
+        packed = self.store.packed.get(prefix)
+        if packed is not None and [f for f, _, _ in packed[3]] != list(names):
+            packed = None  # layout differs from what the caller computes with: read field by field
         # Missing rows are bounded by the caller's batch budget. One GPU evaluation
         # for the complete batch replaces a synchronization per expert.
-        rows = self.store.read_raw_many([(prefix + '.' + n, e) for e in missing for n in names]) if missing else []
+        if packed is not None and missing:
+            rows = self.store.read_packed_many(prefix, missing)
+        else:
+            rows = self.store.read_raw_many([(prefix + '.' + n, e) for e in missing for n in names]) if missing else []
         for index, expert in enumerate(missing):
-            raw = dict(zip(names, rows[index * len(names):(index + 1) * len(names)]))
-            groups = {}
-            for name in names:
-                group = name.rsplit('.', 1)[0] if '.' in name else ''
-                groups.setdefault(group, []).append(name)
             value = {}
-            for group, fields in groups.items():
-                # Keep a single contiguous allocation per projection in the cache.
-                # Field arrays are zero-copy views of the same packed allocation.
-                blob = mx.array(memoryview(b''.join(raw[n][0] for n in fields)), dtype=mx.uint8)
-                value['_packed_' + group] = blob
-                offset = 0
-                for n in fields:
-                    data, dtype, shape = raw[n]
-                    value[n] = blob[offset:offset + len(data)].view(dtype).reshape(shape)
-                    offset += len(data)
+            if packed is not None:
+                # One allocation for the whole expert; projections and fields are zero-copy views of it.
+                blob = mx.array(memoryview(rows[index]), dtype=mx.uint8)
+                spans = {f: (o, n) for f, o, n in packed[3]}
+                for group, fields in groups.items():
+                    start, _ = spans[fields[0]]
+                    end = spans[fields[-1]][0] + spans[fields[-1]][1]
+                    value['_packed_' + group] = blob[start:end]
+                    for n in fields:
+                        meta = self.store.tensors[prefix + '.' + n][2]
+                        o, nb = spans[n]
+                        value[n] = blob[o:o + nb].view(_DTYPES[meta['dtype']]).reshape(meta['shape'][1:])
+            else:
+                raw = dict(zip(names, rows[index * len(names):(index + 1) * len(names)]))
+                for group, fields in groups.items():
+                    # Keep a single contiguous allocation per projection in the cache.
+                    # Field arrays are zero-copy views of the same packed allocation.
+                    blob = mx.array(memoryview(b''.join(raw[n][0] for n in fields)), dtype=mx.uint8)
+                    value['_packed_' + group] = blob
+                    offset = 0
+                    for n in fields:
+                        data, dtype, shape = raw[n]
+                        value[n] = blob[offset:offset + len(data)].view(dtype).reshape(shape)
+                        offset += len(data)
             key = (prefix, expert)
             admit = size <= self.max_bytes
             if admit and self.policy == 'lfu' and self.entries and self.resident_bytes + size > self.max_bytes:
@@ -260,7 +335,7 @@ class ExpertCache:
                     routing_seconds=self.routing_seconds, fetch_seconds=self.fetch_seconds,
                     expert_compute_seconds=self.expert_compute_seconds, grouped_calls=self.grouped_calls,
                     direct_q4_calls=self.direct_q4_calls, fused_q4_calls=self.fused_q4_calls,
-                    uncached_reads=self.store.uncached_reads,
+                    uncached_reads=self.store.uncached_reads, packed_modules=len(self.store.packed),
                     paged_projections=self.paged_projections,
                     paged_weight_bytes=self.paged_weight_bytes,
                     min_experts_per_projection=min(self.experts_per_projection, default=0),
@@ -478,10 +553,10 @@ class SSDGroupedSwitch(nn.Module):
         return result.reshape(*indices.shape, self._output_dims)
 
 
-def attach_ssd_experts(model, directory: str | Path, cache_bytes: int, *, group_experts: bool = True, cache_policy: str = 'lru', frequency_cap: int | None = None) -> ExpertCache:
+def attach_ssd_experts(model, directory: str | Path, cache_bytes: int, *, group_experts: bool = True, cache_policy: str = 'lru', frequency_cap: int | None = None, packed_dir: str | Path | None = None) -> ExpertCache:
     from mlx_lm.models.switch_layers import SwitchLinear, QuantizedSwitchLinear, SwitchGLU, SwitchMLP
 
-    cache = ExpertCache(ExpertStore(directory), cache_bytes, policy=cache_policy, frequency_cap=frequency_cap)
+    cache = ExpertCache(ExpertStore(directory, packed_dir), cache_bytes, policy=cache_policy, frequency_cap=frequency_cap)
     replacements = []
     grouped = []
     for path, module in model.named_modules():

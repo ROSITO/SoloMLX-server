@@ -266,3 +266,55 @@ def test_lfu_frequency_cap_limits_prefill_credit(tmp_path):
     assert ('experts', 0) not in cache.entries
     assert mx.array_equal(cache.get('experts', ('weight',), 1)['weight'], weights[1]).item()
     cache.store.close()
+
+
+@pytest.mark.parametrize('quantized', [False, True])
+def test_packed_experts_one_read_per_miss_and_same_outputs(tmp_path, quantized):
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    def fresh():
+        mx.random.seed(3)
+        m = TinyMoE()
+        if quantized:
+            nn.quantize(m, group_size=32, bits=4)
+        mx.eval(m.parameters())
+        return m
+
+    model = fresh()
+    mx.save_safetensors(str(tmp_path / 'model.safetensors'), dict(tree_flatten(model.parameters())))
+    x = mx.random.normal((1, 9, 64))
+    indices = (mx.arange(27) % 5).reshape(1, 9, 3)
+    resident = model.experts(x, indices)
+    unpacked_model = fresh()
+    attach_ssd_experts(unpacked_model, tmp_path, cache_bytes=10**9)  # field-by-field reads
+    expected = unpacked_model.experts(x, indices)
+    mx.eval(resident, expected)
+
+    packed_dir = tmp_path / 'packed'  # may live on another disk than the checkpoint
+    script = Path(__file__).resolve().parents[1] / 'scripts' / 'pack_ssd_experts.py'
+    subprocess.run([sys.executable, str(script), '--src', str(tmp_path), '--dst', str(packed_dir), '--block', '2'],
+                   check=True, capture_output=True)
+
+    cache = attach_ssd_experts(model, tmp_path, cache_bytes=10**9, packed_dir=packed_dir)
+    assert list(cache.store.packed) == ['experts']
+    actual = model.experts(x, indices)
+    mx.eval(actual)
+    assert mx.array_equal(expected, actual).item()  # packed reads give exactly the field-by-field result
+    assert mx.allclose(resident, actual, atol=2e-5, rtol=2e-5).item()
+    assert cache.store.read_calls == cache.misses == 5  # one read per expert, all 5 experts used
+
+
+def test_packed_file_that_does_not_match_the_checkpoint_is_rejected(tmp_path):
+    import json
+    import struct
+
+    model = TinyMoE()
+    mx.save_safetensors(str(tmp_path / 'model.safetensors'), dict(tree_flatten(model.parameters())))
+    layout = {'experts': [['up_proj.weight', 0, 999]]}
+    header = json.dumps({'experts.ssd_packed': {'dtype': 'U8', 'shape': [5, 999], 'data_offsets': [0, 4995]},
+                         '__metadata__': {'ssd_fields': json.dumps(layout)}}).encode()
+    (tmp_path / 'ssd_experts.safetensors').write_bytes(struct.pack('<Q', len(header)) + header + bytes(4995))
+    with pytest.raises(ValueError, match='does not match'):
+        attach_ssd_experts(model, tmp_path, cache_bytes=10**6)

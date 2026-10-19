@@ -362,6 +362,7 @@ class MLXLMBackend(RuntimeBackend):
                         loaded, directory, int(settings.ssd_experts_cache_gb * 1024**3),
                         cache_policy=settings.ssd_experts_cache_policy,
                         frequency_cap=settings.ssd_experts_frequency_cap,
+                        packed_dir=settings.ssd_experts_packed_dir or None,
                     )
                 except BaseException:
                     mx.set_cache_limit(previous_limit)

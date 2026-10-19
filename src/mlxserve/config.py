@@ -51,6 +51,9 @@ class Settings(BaseSettings):
     ssd_experts_cache_policy: Literal['lru', 'lfu'] = 'lru'
     ssd_experts_frequency_cap: int | None = Field(default=None, ge=1)
     ssd_experts_metal_cache_mb: int = Field(default=128, ge=0)
+    # Directory with ssd_experts*.safetensors from scripts/pack_ssd_experts.py (one read per expert);
+    # empty = look in the checkpoint directory. Unpacked experts are read field by field.
+    ssd_experts_packed_dir: str = ''
     # mlx_lm logits processor: >1.0 discourages repetition; can destabilize some quants — off by default.
     # Enable e.g. MLXSERVE_GENERATION_REPETITION_PENALTY=1.08 when needed.
     generation_repetition_penalty: float = 1.0
