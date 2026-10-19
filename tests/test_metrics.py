@@ -20,7 +20,8 @@ def test_metrics_endpoint_exposes_prometheus_text():
 
 def test_red_memory_zone_increments_denial_counter():
     before = metrics.memory_chat_denied_total
-    with patch("mlxserve.api.app.guardian.classify_detail", return_value=("red", "test_reason")):
+    with patch("mlxserve.api.app.guardian.classify_detail", return_value=("red", "test_reason")), \
+            patch("mlxserve.api.app.settings.memory_wait_seconds", 0):
         client = TestClient(app)
         resp = client.post(
             "/v1/chat/completions",

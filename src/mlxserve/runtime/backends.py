@@ -46,6 +46,9 @@ class RuntimeBackend:
         """(start, end, parser) for the loaded model, or None when it has no tool calling."""
         return None
 
+    async def release_memory(self, drop_prompt_cache: bool = False) -> None:
+        """Give back memory the backend holds but can rebuild (called before refusing a request)."""
+
     def unload(self) -> None:
         raise NotImplementedError
 
@@ -252,6 +255,7 @@ class MLXLMBackend(RuntimeBackend):
         # stream of the thread that created them, and MLX runs one generation at a time anyway.
         self._mlx_thread = ThreadPoolExecutor(max_workers=1, thread_name_prefix="mlx")
         self._gen_suffix: str | None = None  # chat template's generation prompt, per loaded model
+        self._user_boundary: dict[str, str] = {}  # prompt -> its text up to the end of the last user message
         self.last_cached_tokens = 0
         # (bytes/token of growing layers, [(bytes/token, window)] of sliding layers, fixed bytes); set on load
         self._kv_profile: tuple[int, list[tuple[int, int]], int] | None = None
@@ -282,14 +286,27 @@ class MLXLMBackend(RuntimeBackend):
         if self.tokenizer is None:
             raise RuntimeError("Model is not loaded")
 
-        def _from_template() -> str:
+        def render(msgs: list[dict], generation: bool) -> str:
             return self.tokenizer.apply_chat_template(
-                messages,
+                msgs,
                 tokenize=False,
-                add_generation_prompt=True,
+                add_generation_prompt=generation,
                 enable_thinking=self.enable_thinking,  # ignored by templates without it
                 **({"tools": tools} if tools else {}),
             )
+
+        def _from_template() -> str:
+            prompt = render(messages, True)
+            # Many templates (Nemotron, Qwen3) re-render assistant turns once a newer user message exists, so
+            # the history only stays byte-identical up to the last user message: remember that boundary.
+            last_user = max((i for i, m in enumerate(messages) if m.get("role") == "user"), default=None)
+            if last_user is not None and last_user < len(messages) - 1:
+                head = render(messages[: last_user + 1], False)
+                if prompt.startswith(head):
+                    self._user_boundary[prompt] = head
+                    while len(self._user_boundary) > 16:
+                        self._user_boundary.pop(next(iter(self._user_boundary)))
+            return prompt
 
         if getattr(self.tokenizer, "has_chat_template", False):
             return await asyncio.to_thread(_from_template)
@@ -395,6 +412,18 @@ class MLXLMBackend(RuntimeBackend):
         held = lambda w: min(seq_len, w + self.prefill_step_size)  # noqa: E731
         return (grow * seq_len + sum(b * held(w) for b, w in sliding) + fixed) / 1e9
 
+    async def release_memory(self, drop_prompt_cache: bool = False) -> None:
+        def _release() -> None:
+            import mlx.core as mx
+
+            mx.clear_cache()  # freed MLX buffers kept for reuse
+            store = self._prompt_cache
+            if drop_prompt_cache and store is not None:
+                with self._prompt_cache_lock:
+                    store.trim_to(n_bytes=store.nbytes // 2)  # oldest entries first
+
+        await self._on_mlx_thread(_release)
+
     async def _on_mlx_thread(self, fn):
         return await asyncio.get_running_loop().run_in_executor(self._mlx_thread, fn)
 
@@ -423,26 +452,30 @@ class MLXLMBackend(RuntimeBackend):
         add_special = tok.bos_token is None or not prompt.startswith(tok.bos_token)
         tokens = tok.encode(prompt, add_special_tokens=add_special)
         store = self._prompt_cache
-        cache, rest, keep = None, tokens, None  # keep: the prefix entry the next turn will reuse
+        cache, rest, keep = None, tokens, []  # keep: prefix entries the next requests will reuse
         if store is not None:
             with self._prompt_cache_lock:
                 cache, rest = store.fetch_nearest_cache(self.model_name, tokens)
             if cache is None or not rest:
                 cache, rest = make_prompt_cache(self.model), tokens
             else:
-                keep = (tokens[: len(tokens) - len(rest)], copy.deepcopy(cache))
+                keep = [(tokens[: len(tokens) - len(rest)], copy.deepcopy(cache))]
         self.last_cached_tokens = len(tokens) - len(rest)
+        # KV snapshots at prefixes the next requests will start with exactly, shortest first:
+        # - end of the last user message: survives a new user message (templates re-render older replies)
+        # - end of the history, before the generation prompt: survives the reply being re-rendered
         suffix = self._generation_suffix() if store is not None else ""
+        boundaries = [self._user_boundary.get(prompt)] if store is not None else []
         if suffix and prompt.endswith(suffix):
-            # Snapshot the KV at the end of the stable part (history, before the generation prompt):
-            # the next turn starts with exactly these tokens even when the reply is re-rendered.
-            stable = tok.encode(prompt[: -len(suffix)], add_special_tokens=add_special)
+            boundaries.append(prompt[: -len(suffix)])
+        for text in filter(None, boundaries):
+            stable = tok.encode(text, add_special_tokens=add_special)
             start = len(tokens) - len(rest)
             if len(stable) > start and tokens[: len(stable)] == stable:
                 self._prefill(tokens[start : len(stable)], cache, gen_kw.get("prefill_step_size") or 2048)
-                keep = (stable, copy.deepcopy(cache))
+                keep.append((stable, copy.deepcopy(cache)))
                 with self._prompt_cache_lock:
-                    store.insert_cache(self.model_name, *keep)
+                    store.insert_cache(self.model_name, *keep[-1])
                 rest = tokens[len(stable) :]
         generated: list[int] = []
         if mtp is not None:
@@ -456,11 +489,10 @@ class MLXLMBackend(RuntimeBackend):
         if store is not None:
             with self._prompt_cache_lock:
                 store.insert_cache(self.model_name, tokens + generated, cache)
-                if keep:
-                    # mlx-lm's LRU does not refresh an entry on fetch. Re-insert the prefix the next turn will
-                    # reuse (new history snapshot, else the one just reused) last, so it outlives this turn's
-                    # own, rarely reused, entry.
-                    store.insert_cache(self.model_name, *keep)
+                # mlx-lm's LRU does not refresh an entry on fetch. Re-insert the prefixes the next requests will
+                # reuse last, so they outlive this request's own, rarely reused, entry.
+                for entry in keep:
+                    store.insert_cache(self.model_name, *entry)
 
     async def generate(
         self,

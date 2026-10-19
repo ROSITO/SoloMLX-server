@@ -61,7 +61,8 @@ def test_stop_sequence_trims_completion():
 def test_v1_error_envelope_on_memory_deny():
     original = _relax()
     try:
-        with patch("mlxserve.api.app.guardian.classify_detail", return_value=("red", "test_envelope")):
+        with patch("mlxserve.api.app.guardian.classify_detail", return_value=("red", "test_envelope")), \
+                patch("mlxserve.api.app.settings.memory_wait_seconds", 0):
             client = TestClient(app)
             resp = client.post(
                 "/v1/chat/completions",
@@ -71,5 +72,25 @@ def test_v1_error_envelope_on_memory_deny():
         data = resp.json()
         assert "error" in data
         assert "message" in data["error"]
+    finally:
+        guardian.soft_limit_gb, guardian.hard_limit_gb, engine.backend, engine.loaded_model = original
+
+
+def test_red_zone_frees_memory_before_refusing():
+    """Red, then green once the backend released its caches: the request goes through."""
+    original = _relax()
+    released = []
+
+    class Releasing(StubBackend):
+        async def release_memory(self, drop_prompt_cache=False):
+            released.append(drop_prompt_cache)
+
+    engine.backend = Releasing()
+    zones = iter([("red", "x"), ("red", "x"), ("green", "")])
+    try:
+        with patch("mlxserve.api.app.guardian.classify_detail", side_effect=lambda *a, **k: next(zones, ("green", ""))):
+            resp = TestClient(app).post("/v1/chat/completions", json={"messages": [{"role": "user", "content": "x"}]})
+        assert resp.status_code == 200
+        assert released == [False, True]  # MLX buffer cache first, then half of the prompt cache
     finally:
         guardian.soft_limit_gb, guardian.hard_limit_gb, engine.backend, engine.loaded_model = original

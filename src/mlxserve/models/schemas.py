@@ -80,8 +80,9 @@ class ChatMessage(BaseModel):
     def _check_content(self):
         if isinstance(self.content, list):  # OpenAI content parts: keep text only
             self.content = "".join(p.get("text", "") for p in self.content if p.get("type") == "text")
-        if not self.content and not (self.role == "assistant" and self.tool_calls):
-            raise ValueError("content is required (assistant may send tool_calls instead)")
+        # Assistant turns may be empty (e.g. a reply that was only a stripped reasoning block); OpenAI accepts them.
+        if not self.content and self.role != "assistant":
+            raise ValueError("content is required")
         return self
 
 

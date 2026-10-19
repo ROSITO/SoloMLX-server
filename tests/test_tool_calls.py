@@ -78,6 +78,7 @@ def test_messages_validation_and_template_conversion():
         ChatMessage(role="tool", tool_call_id="x")
     with pytest.raises(ValidationError):
         ChatMessage(role="user", content="")
+    assert ChatMessage(role="assistant", content="").content == ""  # empty reply sent back by agents
     parts = ChatMessage(role="user", content=[{"type": "text", "text": "a"}, {"type": "text", "text": "b"}])
     assert parts.content == "ab"
     call = {"id": "c1", "type": "function", "function": {"name": "get_weather", "arguments": '{"city": "Lyon"}'}}
