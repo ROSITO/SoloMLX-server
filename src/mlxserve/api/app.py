@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 import json
 import logging
@@ -314,6 +315,22 @@ def list_recommended_models() -> RecommendedModelsResponse:
     return RecommendedModelsResponse(machine_ram_gb=ram_gb, data=data)
 
 
+async def _admit(estimated_gb: float) -> tuple[str, str]:
+    """Memory zone for a request. Before refusing (red): free the MLX buffer cache, then half of the
+    prompt cache, then wait for other processes to release memory (agents pause between turns to run tools)."""
+    zone, reason = guardian.classify_detail(estimated_request_gb=estimated_gb)
+    for drop_prompt_cache in (False, True):
+        if zone != "red":
+            return zone, reason
+        await engine.backend.release_memory(drop_prompt_cache=drop_prompt_cache)
+        zone, reason = guardian.classify_detail(estimated_request_gb=estimated_gb)
+    deadline = time.monotonic() + settings.memory_wait_seconds
+    while zone == "red" and time.monotonic() < deadline:
+        await asyncio.sleep(1.0)
+        zone, reason = guardian.classify_detail(estimated_request_gb=estimated_gb)
+    return zone, reason
+
+
 def _loaded_kv_gb(model: str, seq_len: int) -> float | None:
     """Real KV size for the already-loaded model (None: fall back to the generic bound)."""
     estimate = getattr(engine.backend, "kv_gb_estimate", None)
@@ -346,7 +363,7 @@ async def chat_completions(req: ChatCompletionRequest):
         kv_bytes_per_element=settings.memory_admission_kv_bytes_per_element,
         kv_gb=_loaded_kv_gb(model, prompt_est + req.max_tokens),
     )
-    zone, deny_reason = guardian.classify_detail(estimated_request_gb=estimated_gb)
+    zone, deny_reason = await _admit(estimated_gb)
     if zone == "red":
         metrics.observe_memory_chat_denied(deny_reason)
         raise HTTPException(status_code=503, detail="Server memory pressure too high")

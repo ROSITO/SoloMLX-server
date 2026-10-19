@@ -54,6 +54,8 @@ class Settings(BaseSettings):
     prompt_cache_gb: float = 4.0
     # Requests asking for more (agent harnesses send 8k-32k) are clamped, not rejected.
     max_output_tokens: int = 8192
+    # In the red memory zone: free the server's caches, then wait up to this long before answering 503.
+    memory_wait_seconds: float = 20.0
     # Context window advertised to clients (/v1/models context_length, `mlxserve opencode`):
     # min(this, the model's max_position_embeddings).
     context_tokens: int = 131072

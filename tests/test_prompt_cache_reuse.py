@@ -142,3 +142,42 @@ def test_reused_entry_is_refreshed_in_the_lru(monkeypatch):
     assert run("history\x01A") == 8    # reuses it (and refreshes it)
     run("other")                       # a third entry: the LRU (size 2) evicts the least recent one
     assert run("history\x01B") == 8    # the reused history survived
+
+
+def test_new_user_message_reuses_history_up_to_the_previous_user_message(monkeypatch):
+    """Nemotron/Qwen3-style templates re-render older replies once a newer user message exists."""
+    import asyncio
+
+    prefilled = []
+    monkeypatch.setattr(
+        mlx_lm, "stream_generate",
+        lambda model, tok, prompt, prompt_cache, **kw: prefilled.append(len(prompt)) or iter([SimpleNamespace(token=1, text="x")]),
+    )
+    monkeypatch.setattr(mlx_cache, "make_prompt_cache", lambda model: [FakeCache()])
+
+    class Tok(FakeTok):
+        has_chat_template = True
+
+        def apply_chat_template(self, msgs, add_generation_prompt=False, **kw):
+            last_user = max(i for i, m in enumerate(msgs) if m["role"] == "user")
+            out = ""
+            for i, m in enumerate(msgs):
+                tag = {"user": "U", "tool": "T"}.get(m["role"], "A" if i > last_user else "a")  # older reply: other form
+                out += f"<{tag}>{m['content']}"
+            return out + ("|G" if add_generation_prompt else "")
+
+    b = MLXLMBackend(prompt_cache_gb=1)
+    b.model = lambda x, cache: None
+    b.tokenizer, b.model_name = Tok(), "m"
+    b._prompt_cache = mlx_cache.LRUPromptCache(max_bytes=10**9)
+    b._prefill = lambda toks, cache, step: None
+
+    def run(msgs):
+        prompt = asyncio.run(b.build_chat_prompt(msgs))
+        "".join(r.text for r in b._generate_sync(prompt, {}))
+        return b.last_cached_tokens
+
+    task1 = [{"role": "user", "content": "do task one"}, {"role": "assistant", "content": "ok"}, {"role": "tool", "content": "done"}]
+    run(task1)
+    task2 = task1 + [{"role": "assistant", "content": "finished"}, {"role": "user", "content": "now task two"}]
+    assert run(task2) == len("<U>do task one")  # the snapshot at the end of the previous user message
